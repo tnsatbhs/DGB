@@ -11,7 +11,7 @@ public class Gradebook {
 	
 	@Id
 	@GeneratedValue(strategy = GenerationType.AUTO)
-	protected Long id;
+	protected Integer id;
 	
 	private String name;
 	private ArrayList<Student> students;

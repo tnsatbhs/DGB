@@ -1,3 +1,7 @@
+import java.util.ArrayList;
+import java.util.List;
+
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
@@ -5,10 +9,19 @@ import org.springframework.web.bind.annotation.RequestMethod;
 
 public class GradebookController {
 	
+	Integer id;
+	ArrayList<Student> students;
+	Student student;
+	//the above variables will not be used in the final code, they are just so return types can be satisfied in stubs
+	
+	@Autowired
+	GradebookRepository gradebookRepo;
+	
 	@RequestMapping(path = "/gradebook/{name}", method = RequestMethod.POST)
-	public void createGradebook(@PathVariable String name)
+	public Integer createGradebook(@PathVariable String name)
 	{
-		//create the primary gradebook, check to make sure name is not already used	
+		//create the primary gradebook, check to make sure name is not already used
+		return id;
 	}
 	
 	@RequestMapping(path = "/secondary/{id}", method = RequestMethod.POST)
@@ -25,9 +38,10 @@ public class GradebookController {
 	}
 	
 	@RequestMapping(path = "/gradebook/{name}", method = RequestMethod.PUT)
-	public void updateGradebook(@PathVariable String name)
+	public Integer updateGradebook(@PathVariable String name)
 	{
 		//create/update the primary gradebook, check to make sure name is not already used
+		return id;
 	}
 	
 	@RequestMapping(path = "/secondary/{id}", method = RequestMethod.PUT)
@@ -44,21 +58,24 @@ public class GradebookController {
 	}
 	
 	@RequestMapping(path = "/gradebook", method = RequestMethod.GET)
-	public void getAllGradebooks()
+	public List<Gradebook> getAllGradebooks()
 	{
-		//get all gradebooks on this server, including primary and secondary copies		
+		//get all gradebooks on this server, including primary and secondary copies
+		return gradebookRepo.findAll();
 	}
 	
 	@RequestMapping(path = "/gradebook/{id}/student", method = RequestMethod.GET)
-	public void getAllStudents(@PathVariable Long id)
+	public ArrayList<Student> getAllStudents(@PathVariable Long id)
 	{
-		//get all students from gradebook, can be done on primary or secondary copy	
+		//get all students from gradebook, can be done on primary or secondary copy
+		return students;
 	}
 	
 	@RequestMapping(path = "/gradebook/{id}/student/{name}", method = RequestMethod.GET)
-	public void getStudent()
+	public Student getStudent()
 	{
-		//get student information, can be done on primary or secondary copy	
+		//get student information, can be done on primary or secondary copy
+		return student;
 	}
 	
 	@RequestMapping(path = "/gradebook/{id}", method = RequestMethod.DELETE)
