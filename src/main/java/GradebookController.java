@@ -8,39 +8,75 @@ public class GradebookController {
 	@RequestMapping(path = "/gradebook/{name}", method = RequestMethod.POST)
 	public void createGradebook(@PathVariable String name)
 	{
-		//do something	
+		//create the primary gradebook, check to make sure name is not already used	
 	}
 	
 	@RequestMapping(path = "/secondary/{id}", method = RequestMethod.POST)
 	public void createSecondary(@PathVariable Long id)
 	{
-		//do something		
+		//create secondary copy of gradebook, cannot be done on primary server		
 	}
 	
 	@RequestMapping(path = "/gradebook/{id}/student/{name}/grade/{grade}", method = RequestMethod.POST)
 	public void createStudent(@PathVariable Long id, @PathVariable String name,
 			@PathVariable String grade)
 	{
-		//do something		
+		//add student and grade, can not be done on secondary, changes must flow to secondary		
 	}
 	
 	@RequestMapping(path = "/gradebook/{name}", method = RequestMethod.PUT)
 	public void updateGradebook(@PathVariable String name)
 	{
-		//do something	
+		//create/update the primary gradebook, check to make sure name is not already used
 	}
 	
 	@RequestMapping(path = "/secondary/{id}", method = RequestMethod.PUT)
 	public void updateSecondary(@PathVariable Long id)
 	{
-		//do something		
+		//create secondary copy of gradebook, cannot be done on primary server	
 	}
 	
 	@RequestMapping(path = "/gradebook/{id}/student/{name}/grade/{grade}", method = RequestMethod.PUT)
 	public void updateStudent(@PathVariable Long id, @PathVariable String name,
 			@PathVariable String grade)
 	{
-		//do something		
+		//add student and grade, can not be done on secondary, changes must flow to secondary		
+	}
+	
+	@RequestMapping(path = "/gradebook", method = RequestMethod.GET)
+	public void getAllGradebooks()
+	{
+		//get all gradebooks on this server, including primary and secondary copies		
+	}
+	
+	@RequestMapping(path = "/gradebook/{id}/student", method = RequestMethod.GET)
+	public void getAllStudents(@PathVariable Long id)
+	{
+		//get all students from gradebook, can be done on primary or secondary copy	
+	}
+	
+	@RequestMapping(path = "/gradebook/{id}/student/{name}", method = RequestMethod.GET)
+	public void getStudent()
+	{
+		//get student information, can be done on primary or secondary copy	
+	}
+	
+	@RequestMapping(path = "/gradebook/{id}", method = RequestMethod.DELETE)
+	public void deleteGradebook(@PathVariable Long id)
+	{
+		//delete gradebook, must be done on primary server, deletion also deletes secondary copies		
+	}
+	
+	@RequestMapping(path = "/secondary/{id}", method = RequestMethod.DELETE)
+	public void deleteSecondary(@PathVariable Long id)
+	{
+		//delete secondary, must be done on secondary server, does not affect primary copy		
+	}
+	
+	@RequestMapping(path = "/gradebook/{id}/student/{name}", method = RequestMethod.DELETE)
+	public void deleteStudent(@PathVariable Long id, @PathVariable String name)
+	{
+		//delete gradebook, must be done on primary server, deletion auto updates secondary copies	
 	}
 
 }
