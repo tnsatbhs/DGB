@@ -1,10 +1,12 @@
 package dgb;
 
 
+import java.io.Serializable;
+
 import com.fasterxml.jackson.dataformat.xml.annotation.JacksonXmlRootElement;
 
 @JacksonXmlRootElement(localName = "student")
-public class Student {
+public class Student implements Serializable {
 	
 	private String name;
 	private String grade;
