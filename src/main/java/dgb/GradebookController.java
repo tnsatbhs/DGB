@@ -1,7 +1,6 @@
 package dgb;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Optional;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -122,7 +121,7 @@ public class GradebookController {
 	public Gradebook createGradebookOp(String name)
 	{
 		try {
-			return gradebookService.create(name);
+			return gradebookService.createGradebook(name);
 		} catch (Exception e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();

@@ -4,6 +4,9 @@ import java.net.InetAddress;
 import java.net.NetworkInterface;
 import java.net.SocketException;
 import java.net.UnknownHostException;
+import java.util.ArrayList;
+import java.util.HashSet;
+
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.context.ConfigurableApplicationContext;
@@ -12,25 +15,89 @@ import org.springframework.context.ConfigurableApplicationContext;
 @SpringBootApplication
 public class Application {
 
-	public static ConfigurableApplicationContext ctx;
-
 	private static Integer port;
+	private static ArrayList<String> knownNames = null;
+
+	public static String secondary_host;
+	public static ConfigurableApplicationContext ctx;
 
 	public static void main(String[] args) throws Exception
 	{
 		Application.ctx = SpringApplication.run(Application.class, args);
 		Application.port = Integer.parseInt(ctx.getEnvironment().getProperty("local.server.port"));
 
-		// This needs to go in a unit test...
-		System.out.println(Application.isThisServer("127.0.0.1", 8080));
-		System.out.println(Application.isThisServer("127.0.0.1", 8090));
-		System.out.println(Application.isThisServer("192.168.1.38", 8080));
-		System.out.println(Application.isThisServer("192.168.1.38", 8090));
+		// TODO: use a real java command line arg parser
+		for (String arg : args) {
+			String[] parts = arg.split("=");
+			if (parts.length == 2) {
+				if (parts[0].equals("secondary_host")) {
+					Application.secondary_host = parts[1];
+				}
+			}
+		}
+		if (Application.secondary_host != null) {
+			System.out.println("Detected secondary host as " + Application.secondary_host);
+		} else {
+			throw new Exception("You must specify secondary_host as an argument. Example: secondary_host=\"127.0.0.1:8090\"");
+		}
+
+		System.out.println("Running on " + Application.port);
+	}
+
+
+	/**
+	 * This might be used if we allowed the user to specify a generic secondary server
+	 * hostname and we needed name resolution.
+	 * @return This instance's host ip and port.
+	 */
+	public static ArrayList<String> getKnownHostnames () {
+		if (Application.knownNames != null) {
+			return Application.knownNames;
+		}
+		HashSet<String> names = new HashSet<String>();
+		ArrayList<String> knownNames = new ArrayList<String>();
+
+		try {
+			InetAddress addr;
+			addr = InetAddress.getLocalHost();
+			String hostname = addr.getHostName();
+
+			if (hostname != "") {
+				names.add(hostname);
+			}
+			String canonicalHostname = addr.getCanonicalHostName();
+			if (canonicalHostname != "") {
+				names.add(canonicalHostname);
+			}
+			for (InetAddress a : InetAddress.getAllByName(canonicalHostname != "" ? canonicalHostname : hostname)) {
+				names.add(a.getHostAddress());
+			}
+
+			addr = InetAddress.getLoopbackAddress();
+			hostname = addr.getCanonicalHostName();
+			if (hostname != "") {
+				names.add(hostname);
+			}
+			hostname = addr.getHostName();
+			if (hostname != "") {
+				names.add(hostname);
+			}
+		} catch (UnknownHostException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+
+		for (String n : names) {
+			knownNames.add(n);
+		}
+		Application.knownNames = knownNames;
+		return knownNames;
 	}
 
 
 	/**
 	 * Given a host name and a port, see if it maps to this server instance.
+	 * This is not needed if we are hardcoding the primary/secondary flag.
 	 * @param host
 	 * @param port
 	 * @return boolean

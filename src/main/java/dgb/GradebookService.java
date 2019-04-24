@@ -29,10 +29,10 @@ public class GradebookService {
 	}
 
 
-	public Gradebook create (String gradebookName) throws Exception {
+	public Gradebook createGradebook (String gradebookName) throws Exception {
 		Gradebook gradebook = new Gradebook();
 		gradebook.setName(gradebookName);
-		if (gradebook == null) throw new Exception("NO GRADEBOOK REPO");
+		gradebook.setIsPrimaryServer(true);
 		gradebookRepo.save(gradebook);
 		return gradebook;
 	}
