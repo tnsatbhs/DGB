@@ -4,11 +4,12 @@ import java.util.List;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RestController;
 
-import dgb.GradebookService.GradebookException;
+import dgb.GradebookService.GradebookNotFoundException;
 
 @RestController
 public class GradebookController {
@@ -35,6 +36,12 @@ public class GradebookController {
 	{
 		//create secondary copy of gradebook, cannot be done on primary server
 		//most of this will be done via logic and communication between apps
+		try {
+			gradebookService.createSecondaryGradebook(id, Application.secondary_host);
+		} catch (GradebookNotFoundException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
 	}
 
 	@RequestMapping(path = "/gradebook/{id}/student/{name}/grade/{grade}", method = RequestMethod.POST)
@@ -44,11 +51,12 @@ public class GradebookController {
 		//Von - add error checking here, throw exception if gradebook doesnt exist
 		try {
 			gradebookService.createStudent(id, name, grade);
-		} catch (GradebookException e) {
+		} catch (GradebookNotFoundException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
 	}
+
 
 	@RequestMapping(path = "/gradebook/{name}", method = RequestMethod.PUT)
 	public Gradebook updateGradebook(@PathVariable String name)
@@ -56,12 +64,14 @@ public class GradebookController {
 		return createGradebookOp(name);
 	}
 
+
 	@RequestMapping(path = "/secondary/{id}", method = RequestMethod.PUT)
-	public void updateSecondary(@PathVariable Integer id)
+	public void updateSecondary(@PathVariable Integer id, @RequestBody Gradebook gradebook)
 	{
 		//create secondary copy of gradebook, cannot be done on primary server
-		//most of this will be done via logic and communication between apps
+		gradebookService.updateSecondaryGradebook(gradebook);
 	}
+
 
 	@RequestMapping(path = "/gradebook/{id}/student/{name}/grade/{grade}", method = RequestMethod.PUT)
 	public void updateStudent(@PathVariable Integer id, @PathVariable String name,
@@ -72,20 +82,20 @@ public class GradebookController {
 
 	@RequestMapping(path = "/gradebook", method = RequestMethod.GET,
 			produces={"text/xml;charset=utf-8"})
-	public List<Gradebook> getAllGradebooks()
+	public List<Gradebook> getGradebooks()
 	{
 		//get all gradebooks on this server, including primary and secondary copies
-		return gradebookService.getAllGradebooks();
+		return gradebookService.getGradebooks();
 	}
 
 	@RequestMapping(path = "/gradebook/{id}/student", method = RequestMethod.GET,
 			produces={"text/xml;charset=utf-8"})
-	public List<Student> getAllStudents(@PathVariable Integer id)
+	public List<Student> getStudents(@PathVariable Integer id)
 	{
 		//Von - add error checking here, throw exception if gradebook doesnt exist
 		try {
-			return gradebookService.getAllStudents(id);
-		} catch (GradebookException e) {
+			return gradebookService.getStudents(id);
+		} catch (GradebookNotFoundException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
@@ -104,24 +114,41 @@ public class GradebookController {
 	public void deleteGradebook(@PathVariable Integer id)
 	{
 		//delete gradebook, must be done on primary server, deletion also deletes secondary copies
+
+		try {
+			gradebookService.deleteGradebook(id);
+		} catch (GradebookNotFoundException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
 	}
 
 	@RequestMapping(path = "/secondary/{id}", method = RequestMethod.DELETE)
 	public void deleteSecondary(@PathVariable Integer id)
 	{
 		//delete secondary, must be done on secondary server, does not affect primary copy
+		// gradebook := gradebookService.getGradebook(id);
+		// if gradebook.isPrimary():
+		//     throw error
+		// gradebookService.deleteGradebook(id);
 	}
 
 	@RequestMapping(path = "/gradebook/{id}/student/{name}", method = RequestMethod.DELETE)
 	public void deleteStudent(@PathVariable Integer id, @PathVariable String name)
 	{
 		//delete gradebook, must be done on primary server, deletion auto updates secondary copies
+		try {
+			gradebookService.deleteStudent(id, name);
+		} catch (GradebookNotFoundException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
 	}
 
 	public Gradebook createGradebookOp(String name)
 	{
 		try {
-			return gradebookService.createGradebook(name);
+			return gradebookService.createGradebook(name, true);
 		} catch (Exception e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
