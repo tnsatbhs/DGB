@@ -17,7 +17,7 @@ public class Gradebook {
 	@GeneratedValue(strategy = GenerationType.AUTO)
 	protected Integer id;
 
-	private String name;
+	private String name, secondaryHost;
 	private Boolean isPrimaryServer;
 	private ArrayList<Student> students = new ArrayList<Student>();
 
@@ -53,7 +53,7 @@ public class Gradebook {
 
 
 	@JsonIgnore
-	public List<Student> getAllStudents()
+	public List<Student> getStudents()
 	{
 		return this.students;
 	}
@@ -61,6 +61,31 @@ public class Gradebook {
 	public void addStudent(Student student)
 	{
 		students.add(student);
+	}
+	public void removeStudent(String name) {
+		for (int i = 0; i < this.students.size(); ++i) {
+			if (this.students.get(i).getName().equals(name)) {
+				this.students.remove(i);
+				break;
+			}
+		}
+	}
+	public Student getStudent(String name) {
+		for (Student s : this.students) {
+			if (s.getName().equals(name)) {
+				return s;
+			}
+		}
+		return null;
+	}
+
+
+	@JsonIgnore
+	public String getSecondaryHost() {
+		return secondaryHost;
+	}
+	public void setSecondaryHost(String value) {
+		secondaryHost = value;
 	}
 
 }
