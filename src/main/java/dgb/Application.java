@@ -10,6 +10,8 @@ import java.util.HashSet;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.context.ConfigurableApplicationContext;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 
 @SpringBootApplication
@@ -20,6 +22,8 @@ public class Application {
 
 	public static String secondary_host;
 	public static ConfigurableApplicationContext ctx;
+
+	private static final Logger logger = LoggerFactory.getLogger(Application.class);
 
 	public static void main(String[] args) throws Exception
 	{

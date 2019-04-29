@@ -162,4 +162,16 @@ public class GradebookController {
 		}
 	}
 
+	public Gradebook updateGradebookOp(String name) {
+
+		try {
+			return gradebookService.updateGradebook(name);
+		} catch (Exception e) {
+			e.printStackTrace();
+			System.out.println("IT FAILED");
+		}
+		return null;
+
+	}
+
 }
