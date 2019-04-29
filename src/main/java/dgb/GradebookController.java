@@ -1,5 +1,4 @@
 package dgb;
-import java.util.ArrayList;
 import java.util.List;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -9,13 +8,9 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RestController;
 
-import dgb.GradebookService.GradebookNotFoundException;
-
 @RestController
 public class GradebookController {
 
-	Integer id;
-	ArrayList<Student> students;
 	Student student;
 	//the above variables will not be used in the final code, they are just so return types can be satisfied in stubs
 
@@ -25,10 +20,11 @@ public class GradebookController {
 
 
 
-	@RequestMapping(path = "/gradebook/{name}", method = RequestMethod.POST)
-	public Gradebook createGradebook(@PathVariable String name)
+	@RequestMapping(path = "/gradebook/{name}", method = RequestMethod.POST,
+			produces={"text/xml;charset=utf-8"})
+	public Integer createGradebook(@PathVariable String name)
 	{
-		return createGradebookOp(name);
+		return createGradebookOp(name).getId();
 	}
 
 	@RequestMapping(path = "/secondary/{id}", method = RequestMethod.POST)
@@ -39,8 +35,7 @@ public class GradebookController {
 		try {
 			gradebookService.createSecondaryGradebook(id, Application.secondary_host);
 		} catch (GradebookNotFoundException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
+			throw e;
 		}
 	}
 
@@ -52,16 +47,19 @@ public class GradebookController {
 		try {
 			gradebookService.createStudent(id, name, grade);
 		} catch (GradebookNotFoundException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
+			throw e;
+		} catch (InvalidGradeException e) {
+			throw e;
+		} catch (StudentExistsException e) {
+			throw e;
 		}
 	}
 
 
 	@RequestMapping(path = "/gradebook/{name}", method = RequestMethod.PUT)
-	public Gradebook updateGradebook(@PathVariable String name)
+	public Integer updateGradebook(@PathVariable String name)
 	{
-		return createGradebookOp(name);
+		return createGradebookOp(name).getId();
 	}
 
 
@@ -77,7 +75,15 @@ public class GradebookController {
 	public void updateStudent(@PathVariable Integer id, @PathVariable String name,
 			@PathVariable String grade)
 	{
-		//add student and grade, can not be done on secondary, changes must flow to secondary
+		try {
+			gradebookService.updateStudent(id, name, grade);
+		} catch (GradebookNotFoundException e) {
+			throw e;	
+		} catch (InvalidGradeException e) {
+			throw e;
+		} catch (StudentNotFoundException e) {
+			throw e;
+		}
 	}
 
 	@RequestMapping(path = "/gradebook", method = RequestMethod.GET,
@@ -96,10 +102,8 @@ public class GradebookController {
 		try {
 			return gradebookService.getStudents(id);
 		} catch (GradebookNotFoundException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
+			throw e;
 		}
-		return null;
 	}
 
 	@RequestMapping(path = "/gradebook/{id}/student/{name}", method = RequestMethod.GET,
@@ -107,7 +111,13 @@ public class GradebookController {
 	public Student getStudent(@PathVariable Integer id, @PathVariable String name)
 	{
 		//get student information, can be done on primary or secondary copy
-		return student;
+		try {
+			return gradebookService.getStudent(id, name);
+		} catch (GradebookNotFoundException e) {
+			throw e;
+		} catch (StudentNotFoundException e) {
+			throw e;
+		}
 	}
 
 	@RequestMapping(path = "/gradebook/{id}", method = RequestMethod.DELETE)
@@ -118,8 +128,7 @@ public class GradebookController {
 		try {
 			gradebookService.deleteGradebook(id);
 		} catch (GradebookNotFoundException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
+			throw e;
 		}
 	}
 
@@ -140,8 +149,7 @@ public class GradebookController {
 		try {
 			gradebookService.deleteStudent(id, name);
 		} catch (GradebookNotFoundException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
+			throw e;
 		}
 	}
 
@@ -149,12 +157,9 @@ public class GradebookController {
 	{
 		try {
 			return gradebookService.createGradebook(name, true);
-		} catch (Exception e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-			System.out.println("IT FAILED");
+		} catch (GradebookExistsException e) {
+			throw e;
 		}
-		return null;
 	}
 
 }
