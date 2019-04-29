@@ -87,6 +87,17 @@ public class GradebookService extends RestTemplate {
 		this.saveGradebook(gradebook);
 	}
 
+	public Gradebook updateGradebook(String gradebookName) {
+
+		for (Gradebook gradebook : gradebookRepo.findAll()) {
+
+		}
+		Gradebook gradebook = new Gradebook();
+
+		this.saveGradebook(gradebook);
+		return gradebook;
+
+	}
 
 	public void updateSecondaryGradebook (Gradebook gradebook) {
 		this.postForLocation(PROTOCOL + "://" + gradebook.getSecondaryHost() + "/gradebook/" + gradebook.getId(), gradebook);

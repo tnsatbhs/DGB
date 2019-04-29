@@ -61,7 +61,7 @@ public class GradebookController {
 	@RequestMapping(path = "/gradebook/{name}", method = RequestMethod.PUT)
 	public Gradebook updateGradebook(@PathVariable String name)
 	{
-		return createGradebookOp(name);
+		return updateGradebookOp(name);
 	}
 
 
@@ -155,6 +155,18 @@ public class GradebookController {
 			System.out.println("IT FAILED");
 		}
 		return null;
+	}
+
+	public Gradebook updateGradebookOp(String name) {
+
+		try {
+			return gradebookService.updateGradebook(name);
+		} catch (Exception e) {
+			e.printStackTrace();
+			System.out.println("IT FAILED");
+		}
+		return null;
+
 	}
 
 }
