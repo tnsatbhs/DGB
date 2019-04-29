@@ -6,6 +6,8 @@ import java.util.Optional;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
+import org.springframework.web.client.RestClientException;
+
 
 
 @Service
@@ -75,7 +77,13 @@ public class GradebookService extends RestTemplate {
 
 	public void createSecondaryGradebook (Gradebook gradebook, String secondaryHost) {
 		gradebook.setSecondaryHost(secondaryHost);
-		this.postForLocation(PROTOCOL + "://" + gradebook.getSecondaryHost() + "/gradebook/" + gradebook.getId(), gradebook);
+		gradebook.setIsPrimaryServer(false);
+		try{
+			this.postForLocation(PROTOCOL + "://" + gradebook.getSecondaryHost() + "/gradebook/" + gradebook.getId(), gradebook);
+		}catch (RestClientException e){
+			logger.error(e);
+		}
+
 		this.saveGradebook(gradebook);
 	}
 
