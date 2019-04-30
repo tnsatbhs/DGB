@@ -57,9 +57,9 @@ public class GradebookController {
 
 
 	@RequestMapping(path = "/gradebook/{name}", method = RequestMethod.PUT)
-	public Integer updateGradebook(@PathVariable String name)
+	public int updateGradebook(@PathVariable String name)
 	{
-		return createGradebookOp(name).getId();
+		return updateGradebookOp(name);
 	}
 
 
@@ -162,15 +162,13 @@ public class GradebookController {
 		}
 	}
 
-	public Gradebook updateGradebookOp(String name) {
+	public int updateGradebookOp(String name) {
 
 		try {
 			return gradebookService.updateGradebook(name);
-		} catch (Exception e) {
-			e.printStackTrace();
-			System.out.println("IT FAILED");
+		} catch (SecondaryEditNotAllowedException e) {
+			throw e;
 		}
-		return null;
 
 	}
 

@@ -78,15 +78,17 @@ public class GradebookService extends RestTemplate {
 		this.saveGradebook(gradebook);
 	}
 
-	public Gradebook updateGradebook(String gradebookName) {
+	public int updateGradebook(String gradebookName) {
 
-		for (Gradebook gradebook : gradebookRepo.findAll()) {
+		Gradebook oGradebook = gradebookRepo.findByName(gradebookName);
 
+		if(!oGradebook.getIsPrimaryServer()){
+			throw new SecondaryEditNotAllowedException("Gradebook Id-" + oGradebook.getId());
 		}
-		Gradebook gradebook = new Gradebook();
+		oGradebook.setName("cfirst");
 
-		this.saveGradebook(gradebook);
-		return gradebook;
+		this.saveGradebook(oGradebook);
+		return oGradebook.getId();
 
 	}
 
