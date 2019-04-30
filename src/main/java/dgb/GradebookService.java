@@ -57,20 +57,20 @@ public class GradebookService extends RestTemplate {
 
 
 	public void createSecondaryGradebook (Integer gradebookId, String secondaryHost) throws GradebookNotFoundException {
-		Optional<Gradebook> opt = gradebookRepo.findById(gradebookId);
-		if (!opt.isPresent()) {
-			throw new GradebookNotFoundException("Gradebook Id-" + gradebookId);
-		}
-		Gradebook gradebook = opt.get();
-		createSecondaryGradebook(gradebook, secondaryHost);
+
+		Gradebook gradebook = getGradebookById(gradebookId);
+
+		createSecondaryGradebookCall(gradebook, secondaryHost);
+
 	}
 
 
-	public void createSecondaryGradebook (Gradebook gradebook, String secondaryHost) {
+	public void createSecondaryGradebookCall (Gradebook gradebook, String secondaryHost) {
 		gradebook.setSecondaryHost(secondaryHost);
 		gradebook.setIsPrimaryServer(false);
+
 		try{
-			this.postForLocation(PROTOCOL + "://" + gradebook.getSecondaryHost() + "/gradebook/" + gradebook.getId(), gradebook);
+			this.postForLocation(PROTOCOL + "://" + gradebook.getSecondaryHost() + "/gradebook/", gradebook);
 		}catch (RestClientException e){
 			logger.error(e);
 		}
@@ -104,11 +104,9 @@ public class GradebookService extends RestTemplate {
 
 
 	public List<Student> getStudents (Integer gradebookId) {
-		Optional<Gradebook> opt = gradebookRepo.findById(gradebookId);
-		if (!opt.isPresent()) {
-			throw new GradebookNotFoundException("Gradebook Id-" + gradebookId);
-		}
-		Gradebook gradebook = opt.get();
+
+		Gradebook gradebook = getGradebookById(gradebookId);
+
 		return gradebook.getStudents();
 	}
 
@@ -150,12 +148,8 @@ public class GradebookService extends RestTemplate {
 
 	// PUT
 	public void updateStudent (Integer gradebookId, String studentName, String studentGrade) throws GradebookNotFoundException, StudentNotFoundException {
-		Optional<Gradebook> opt = gradebookRepo.findById(gradebookId);
-		if (!opt.isPresent()) {
-			throw new GradebookNotFoundException("Gradebook Id-" + gradebookId);
-		}
-		if (checkGradeInput(studentGrade)==false) throw new InvalidGradeException("grade-" + studentGrade);
-		Gradebook gradebook = opt.get();
+
+		Gradebook gradebook = getGradebookById(gradebookId);
 
 		Student student = gradebook.getStudent(studentName);
 		if (student == null) {
@@ -180,11 +174,8 @@ public class GradebookService extends RestTemplate {
 	
 	public Student getStudent(Integer gradebookId, String studentName) throws GradebookNotFoundException, StudentNotFoundException
 	{
-		Optional<Gradebook> opt = gradebookRepo.findById(gradebookId);
-		if (!opt.isPresent()) {
-			throw new GradebookNotFoundException("Gradebook Id-" + gradebookId);
-		}
-		Gradebook gradebook = opt.get();
+
+		Gradebook gradebook = getGradebookById(gradebookId);
 
 		Student student = gradebook.getStudent(studentName);
 		if (student == null) {
@@ -198,11 +189,8 @@ public class GradebookService extends RestTemplate {
 
 	// DELETE
 	public void deleteGradebook (Integer gradebookId) throws GradebookNotFoundException {
-		Optional<Gradebook> opt = gradebookRepo.findById(gradebookId);
-		if (!opt.isPresent()) {
-			throw new GradebookNotFoundException("Gradebook Id-" + gradebookId);
-		}
-		Gradebook gradebook = opt.get();
+
+		Gradebook gradebook = getGradebookById(gradebookId);
 
 		gradebookRepo.deleteById(gradebookId);
 
@@ -216,11 +204,8 @@ public class GradebookService extends RestTemplate {
 
 	// DELETE
 	public void deleteStudent (Integer gradebookId, String studentName) throws GradebookNotFoundException {
-		Optional<Gradebook> opt = gradebookRepo.findById(gradebookId);
-		if (!opt.isPresent()) {
-			throw new GradebookNotFoundException("Gradebook Id-" + gradebookId);
-		}
-		Gradebook gradebook = opt.get();
+
+		Gradebook gradebook = getGradebookById(gradebookId);
 
 		String secondaryHost = gradebook.getSecondaryHost();
 		if (secondaryHost == null) {
@@ -235,5 +220,17 @@ public class GradebookService extends RestTemplate {
 	{
 		if (!grade.matches("[a-dA-D][+-]?|[eE]|[fF]|[iI]|[wW]|[zZ]")) return false;
 		return true;
+	}
+
+	public Gradebook getGradebookById(int gradebookId){
+
+		Optional<Gradebook> opt = gradebookRepo.findById(gradebookId);
+		if (!opt.isPresent()) {
+			throw new GradebookNotFoundException("Gradebook Id-" + gradebookId);
+		}
+		Gradebook gradebook = opt.get();
+
+		return gradebook;
+
 	}
 }
