@@ -8,12 +8,4 @@ public class ApplicationTest extends TestCase {
 		fail("Not yet implemented");
 	}
 
-	public void testGetKnownHostnames() {
-		fail("Not yet implemented");
-	}
-
-	public void testIsThisServer() {
-		fail("Not yet implemented");
-	}
-
 }

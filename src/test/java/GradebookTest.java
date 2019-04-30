@@ -12,38 +12,38 @@ import dgb.Student;
 import junit.framework.TestCase;
 
 public class GradebookTest extends TestCase {
-	
+
 	@Test
 	public void testSetId() {
-		Gradebook gr = new Gradebook();
-		gr.setId(123);
-		int v = gr.getId();
-		assertEquals(123, v);
+		Gradebook gradebook = new Gradebook();
+		gradebook.setId(123);
+		int id = gradebook.getId();
+		assertEquals(123, id);
 	}
-	
+
 	@Test
 	public void testSetName() {
-		Gradebook gr = new Gradebook();
-		gr.setName("ashif");
-		String v = gr.getName();
-		assertEquals("ashif", v);
+		Gradebook gradebook = new Gradebook();
+		gradebook.setName("ashif");
+		String name = gradebook.getName();
+		assertEquals("ashif", name);
 	}
-	
+
 	@Test
 	public void testSetIsPrimaryServer() {
-		Gradebook gr = new Gradebook();
-		gr.setIsPrimaryServer(true);
-		assertTrue(gr.getIsPrimaryServer());
+		Gradebook gradebook = new Gradebook();
+		gradebook.setIsPrimaryServer(true);
+		assertTrue(gradebook.getIsPrimaryServer());
 	}
 
 	@Test
 	public void testGetAllStudents() {
-		Gradebook gr = new Gradebook();
-		Student s = new Student();
-		gr.addStudent(s);
-		
-		ArrayList<Student> abc = (ArrayList<Student>) gr.getAllStudents();
-		assertTrue(abc.contains(s));
+		Gradebook gradebook = new Gradebook();
+		Student student = new Student();
+		gradebook.addStudent(student);
+
+		ArrayList<Student> students = (ArrayList<Student>) gradebook.getStudents();
+		assertTrue(students.contains(student));
 	}
 
 }

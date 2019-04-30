@@ -1,84 +1,85 @@
-
-
 import java.util.ArrayList;
 import java.util.List;
 
+import org.junit.Test;
+
 import dgb.Gradebook;
 import dgb.GradebookService;
-import dgb.GradebookService.GradebookException;
 import dgb.Student;
+
 import junit.framework.TestCase;
 
 public class GradebookServiceTest extends TestCase {
 
-	public void testGetString() {
-		//GradebookService gb = new GradebookService();
-		//gb.getString("www.google.com");
-		//System.out.println(gb);
-		fail("Not yet implemented");
-	}
 
-	public void testSayPort() {
-		fail("Not yet implemented");
-	}
-
+	@Test
 	public void testCreateGradebook() {
-		GradebookService gb = new GradebookService();
-		
+		GradebookService svc = new GradebookService();
+
 		try {
-			Gradebook b = gb.createGradebook("Math");
-			assertEquals("Math", b.getName());
+			Gradebook gradebook = svc.createGradebook("Math", true);
+			assertEquals("Math", gradebook.getName());
+			assertTrue(gradebook.getIsPrimaryServer());
 		}
 		catch (Exception e) {
-			
+			System.err.println(e.getMessage());
 		}
 	}
 
-	public void testGetAllGradebooks() {
-		GradebookService gb = new GradebookService();
+	@Test
+	public void testGetGradebooks() {
+		GradebookService svc = new GradebookService();
 		try {
-			Gradebook b = gb.createGradebook("Math");
-			List<Gradebook> bb = gb.getAllGradebooks();
-			assertEquals("Math", bb);
+			svc.createGradebook("Math", false);
+			List<Gradebook> gradebooks = svc.getGradebooks();
+			ArrayList<String> names = new ArrayList<String>();
+			for (Gradebook gradebook : gradebooks) {
+				names.add(gradebook.getName());
+			}
+			assertTrue(names.contains("Math"));
 		}
 		catch (Exception e) {
-			
+			System.err.println(e.getMessage());
 		}
 	}
 
-	public void testGetAllStudents() {
-			Gradebook gr = new Gradebook();
-			Student s = new Student();
-			gr.addStudent(s);
-			
-			ArrayList<Student> abc = (ArrayList<Student>) gr.getAllStudents();
-			assertTrue(abc.contains(s));
+
+	@Test
+	public void testGetStudents() {
+		Gradebook gradebook = new Gradebook();
+		Student student = new Student();
+		gradebook.addStudent(student);
+
+		ArrayList<Student> students = (ArrayList<Student>) gradebook.getStudents();
+		assertTrue(students.contains(student));
 	}
 
+
+	@Test
 	public void testCreateStudent() {
-		GradebookService gb = new GradebookService();
+		GradebookService svc = new GradebookService();
 		try {
-			gb.createStudent(123, "ashif", "A");
-			
-			Gradebook gr = new Gradebook();
-			gr.setId(123);
-			int v = gr.getId();
-			assertEquals(123, v);
-			
+			svc.createStudent(123, "ashif", "A");
+
+			Gradebook gradebook = new Gradebook();
+			gradebook.setId(123);
+			int id = gradebook.getId();
+			assertEquals(123, id);
+
 			Student st = new Student();
-			
 			st.setName("Ashif");
 			String name = st.getName();
 			assertEquals("Ashif", name);
-			
+
 			st.setGrade("A");
 			String grade = st.getGrade();
 			assertEquals("A", grade);
 		}
-		catch (GradebookException e) {
+		catch (Exception e) {
+			System.err.println(e.getMessage());
 		}
-		
-		}
+
 	}
+}
 
 
