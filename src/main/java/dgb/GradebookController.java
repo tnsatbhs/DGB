@@ -69,7 +69,7 @@ public class GradebookController {
 
 
 	@RequestMapping(path = "/gradebook/{name}", method = RequestMethod.PUT)
-	public int updateGradebook(@PathVariable String name, @RequestParam String newName)
+	public int updateGradebook(@PathVariable String name, @RequestBody String newName)
 	{
 		return updateGradebookOp(name, newName);
 	}
