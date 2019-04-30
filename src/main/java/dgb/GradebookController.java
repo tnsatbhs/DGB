@@ -2,11 +2,7 @@ package dgb;
 import java.util.List;
 
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestMethod;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 @RestController
 public class GradebookController {
@@ -57,9 +53,9 @@ public class GradebookController {
 
 
 	@RequestMapping(path = "/gradebook/{name}", method = RequestMethod.PUT)
-	public int updateGradebook(@PathVariable String name)
+	public int updateGradebook(@PathVariable String name, @RequestParam String newName)
 	{
-		return updateGradebookOp(name);
+		return updateGradebookOp(name, newName);
 	}
 
 
@@ -162,10 +158,10 @@ public class GradebookController {
 		}
 	}
 
-	public int updateGradebookOp(String name) {
+	public int updateGradebookOp(String name, String upName) {
 
 		try {
-			return gradebookService.updateGradebook(name);
+			return gradebookService.updateGradebook(name, upName);
 		} catch (SecondaryEditNotAllowedException e) {
 			throw e;
 		}
