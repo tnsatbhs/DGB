@@ -20,11 +20,6 @@ public class GradebookService extends RestTemplate {
 	public GradebookRepository gradebookRepo;
 
 
-	public void sayPort () {
-		System.out.println("PORT: " + Application.ctx.getEnvironment().getProperty("local.server.port"));
-	}
-
-
 	public Gradebook createGradebook (Gradebook gradebook, Boolean isPrimary) throws GradebookExistsException {
 		for (Gradebook gb : gradebookRepo.findAll()) {
 			if (gb.getName().equals(gradebook.getName())) {
@@ -49,27 +44,65 @@ public class GradebookService extends RestTemplate {
 	}
 
 
-	public void createSecondaryGradebook (Integer gradebookId, String secondaryHost) throws GradebookNotFoundException {
-		Gradebook gradebook = getGradebookById(gradebookId);
-		gradebook.setSecondaryHost(secondaryHost);
-		gradebook.setIsPrimaryServer(false);
+	// This method is weird. The requirements expect the user to call this on the secondary host,
+	// which means that we need to call the primary to get the gradebook in question. If it doesn't exist, then fail.
+	// If it exists on this server, then fail.
+	public void createSecondaryGradebook (Integer gradebookId, String thisHost, String primaryHost) throws GradebookNotFoundException {
+		Gradebook gradebook;
+
 		try {
-			this.postForLocation(PROTOCOL + "://" + gradebook.getSecondaryHost() + "/gradebook/", gradebook);
-		} catch (RestClientException e){
-			logger.error(e);
+			gradebook = getGradebookById(gradebookId);
+			if (gradebook != null) {
+				System.err.println("Found gradebook name " + gradebook.getName());
+				throw new GradebookExistsException(gradebookId.toString() + " already exists on this server");
+			}
+		} catch (GradebookNotFoundException exception) {
+			// Good...
 		}
+
+		// Get the gradebook from the primary.
+		try {
+			System.out.println("Calling: ");
+			String uri = PROTOCOL + "://" + primaryHost +
+					"/gradebook/" + gradebookId;
+			gradebook = this.getForObject(uri, Gradebook.class);
+		} catch (RestClientException exception) {
+			System.err.println("Failed to get the gradebook from the primary");
+
+			// TODO: how do we figure if it's a 404?
+			throw new GradebookNotFoundException("Not found");
+		}
+
+		// This is so freaking lame. We need to get the gradebook from the primary server, save it here, and then update
+		// the primary server's copy so that it knows a secondary exists.
+
+		// Add secondary host.
+		// We are setting the secondary host to THIS server.
+		gradebook.setSecondaryHost(thisHost);
+		gradebook.setIsPrimaryServer(false);
+
+		// Push to secondary.
+		try {
+			this.postForLocation(PROTOCOL + "://" + primaryHost +
+					"/secondary/" + gradebookId + "/sync", null);
+		} catch (RestClientException e){
+			System.err.println("Failed to sync the primary");
+			// I don't think we want to continue saving the secondary
+			throw e;
+		}
+		// Assuming the above passed, we save the gradebook's edit.
 		this.saveGradebook(gradebook);
 	}
 
 
-	public int updateGradebook(String gradebookName, String upName) {
-		Gradebook oGradebook = gradebookRepo.findByName(gradebookName);
-		if(!oGradebook.getIsPrimaryServer()){
-			throw new SecondaryEditNotAllowedException("Gradebook Id-" + oGradebook.getId());
+	public int updateGradebook(String gradebookName, String newName) {
+		Gradebook gradebook = gradebookRepo.findByName(gradebookName);
+		if(!gradebook.getIsPrimaryServer()){
+			throw new SecondaryEditNotAllowedException("Gradebook Id-" + gradebook.getId());
 		}
-		oGradebook.setName(upName);
-		this.saveGradebook(oGradebook);
-		return oGradebook.getId();
+		gradebook.setName(newName);
+		this.saveGradebook(gradebook);
+		return gradebook.getId();
 	}
 
 
@@ -96,12 +129,15 @@ public class GradebookService extends RestTemplate {
 		if (!opt.isPresent()) {
 			throw new GradebookNotFoundException("Gradebook Id-" + gradebookId);
 		}
-		if (checkGradeInput(studentGrade)==false) throw new InvalidGradeException("grade-" + studentGrade);
+		if (!isValidGrade(studentGrade)) {
+			throw new InvalidGradeException("grade-" + studentGrade);
+		}
 		Gradebook gradebook = opt.get();
 		if (!gradebook.getStudents().isEmpty()) {
-			for (Student temp : gradebook.getStudents())
-			{
-				if (temp.getName().equals(studentName)) throw new StudentExistsException("grade-" + studentGrade);
+			for (Student student : gradebook.getStudents()) {
+				if (student.getName().equals(studentName)) {
+					throw new StudentExistsException("grade-" + studentGrade);
+				}
 			}
 		}
 		Student student = new Student();
@@ -109,8 +145,8 @@ public class GradebookService extends RestTemplate {
 		student.setGrade(studentGrade);
 		gradebook.addStudent(student);
 		this.saveGradebook(gradebook);
-		// TODO: add student and grade, can not be done on secondary, changes must flow to secondary
 
+		// Push new student to secondary host.
 		String secondaryHost = gradebook.getSecondaryHost();
 		if (secondaryHost == null) {
 			return;
@@ -121,7 +157,6 @@ public class GradebookService extends RestTemplate {
 				"/gradebook/" + gradebook.getId() +
 				"/student/" + studentName + "/grade/" + studentGrade,
 				gradebook);
-
 	}
 
 
@@ -184,11 +219,11 @@ public class GradebookService extends RestTemplate {
 	}
 
 
-	public boolean checkGradeInput(String grade) {
-		if (!grade.matches("[a-dA-D][+-]?|[eE]|[fF]|[iI]|[wW]|[zZ]")) {
-			return false;
+	public boolean isValidGrade(String grade) {
+		if (grade.matches("[a-dA-D][+-]?|[eE]|[fF]|[iI]|[wW]|[zZ]")) {
+			return true;
 		}
-		return true;
+		return false;
 	}
 
 
@@ -199,6 +234,18 @@ public class GradebookService extends RestTemplate {
 		}
 		Gradebook gradebook = opt.get();
 		return gradebook;
+	}
+
+
+	// Save the gradebook's secondary host. It was likely just created on the secondary.
+	public void syncSecondaryGradebook(Integer gradebookId, String secondaryHost) {
+		Optional<Gradebook> opt = gradebookRepo.findById(gradebookId);
+		if (!opt.isPresent()) {
+			throw new GradebookNotFoundException("Gradebook Id-" + gradebookId);
+		}
+
+		Gradebook gradebook = opt.get();
+		gradebook.setSecondaryHost(secondaryHost);
 	}
 
 }

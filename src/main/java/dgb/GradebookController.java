@@ -23,17 +23,35 @@ public class GradebookController {
 		return createGradebookOp(name).getId();
 	}
 
+
 	@RequestMapping(path = "/secondary/{id}", method = RequestMethod.POST)
 	public void createSecondary(@PathVariable Integer id)
 	{
 		//create secondary copy of gradebook, cannot be done on primary server
 		//most of this will be done via logic and communication between apps
 		try {
-			gradebookService.createSecondaryGradebook(id, Application.secondary_host);
+			System.out.println("TRYING TO CREATE A SECONDARY HERE...");
+			gradebookService.createSecondaryGradebook(id, Application.this_host, Application.secondary_host);
 		} catch (GradebookNotFoundException e) {
 			throw e;
 		}
 	}
+
+
+	// Someone called a POST /secondary/{id} on the other server. That server called this server's
+	// GET /gradebook/{id} to get the gradebook, create a secondary, and then called this endpoint to notify of a creation on the secondary.
+	@RequestMapping(path = "/secondary/{id}/sync", method = RequestMethod.POST)
+	public void syncSecondary(@PathVariable Integer id)
+	{
+		//create secondary copy of gradebook, cannot be done on primary server
+		//most of this will be done via logic and communication between apps
+		try {
+			gradebookService.syncSecondaryGradebook(id, Application.secondary_host);
+		} catch (GradebookNotFoundException e) {
+			throw e;
+		}
+	}
+
 
 	@RequestMapping(path = "/gradebook/{id}/student/{name}/grade/{grade}", method = RequestMethod.POST)
 	public void createStudent(@PathVariable Integer id, @PathVariable String name,
@@ -74,7 +92,7 @@ public class GradebookController {
 		try {
 			gradebookService.updateStudent(id, name, grade);
 		} catch (GradebookNotFoundException e) {
-			throw e;	
+			throw e;
 		} catch (InvalidGradeException e) {
 			throw e;
 		} catch (StudentNotFoundException e) {
@@ -89,6 +107,16 @@ public class GradebookController {
 		//get all gradebooks on this server, including primary and secondary copies
 		return gradebookService.getGradebooks();
 	}
+
+
+	@RequestMapping(path = "/gradebook/{id}", method = RequestMethod.GET,
+			produces={"text/xml;charset=utf-8"})
+	public Gradebook getGradebook(@PathVariable Integer id)
+	{
+		//get all gradebooks on this server, including primary and secondary copies
+		return gradebookService.getGradebookById(id);
+	}
+
 
 	@RequestMapping(path = "/gradebook/{id}/student", method = RequestMethod.GET,
 			produces={"text/xml;charset=utf-8"})
@@ -158,10 +186,9 @@ public class GradebookController {
 		}
 	}
 
-	public int updateGradebookOp(String name, String upName) {
-
+	public int updateGradebookOp(String name, String newName) {
 		try {
-			return gradebookService.updateGradebook(name, upName);
+			return gradebookService.updateGradebook(name, newName);
 		} catch (SecondaryEditNotAllowedException e) {
 			throw e;
 		}
