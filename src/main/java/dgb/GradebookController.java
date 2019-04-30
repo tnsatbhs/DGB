@@ -43,8 +43,6 @@ public class GradebookController {
 	@RequestMapping(path = "/secondary/{id}/sync", method = RequestMethod.POST)
 	public void syncSecondary(@PathVariable Integer id)
 	{
-		//create secondary copy of gradebook, cannot be done on primary server
-		//most of this will be done via logic and communication between apps
 		try {
 			gradebookService.syncSecondaryGradebook(id, Application.secondary_host);
 		} catch (GradebookNotFoundException e) {
