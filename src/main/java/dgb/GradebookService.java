@@ -62,9 +62,9 @@ public class GradebookService extends RestTemplate {
 
 		// Get the gradebook from the primary.
 		try {
-			System.out.println("Calling: ");
 			String uri = PROTOCOL + "://" + primaryHost +
 					"/gradebook/" + gradebookId;
+			System.out.println("Calling: " + uri);
 			gradebook = this.getForObject(uri, Gradebook.class);
 		} catch (RestClientException exception) {
 			System.err.println("Failed to get the gradebook from the primary");
@@ -197,12 +197,21 @@ public class GradebookService extends RestTemplate {
 	// DELETE
 	public void deleteGradebook (Integer gradebookId) throws GradebookNotFoundException {
 		Gradebook gradebook = getGradebookById(gradebookId);
-		gradebookRepo.deleteById(gradebookId);
 		String secondaryHost = gradebook.getSecondaryHost();
+		System.out.println("Deleted gradebook with id: " + gradebookId.toString());
+		gradebookRepo.deleteById(gradebookId);
 		if (secondaryHost == null) {
+			System.out.println("No secondary host for gradebook: " + gradebookId.toString());
 			return;
 		}
-		this.delete(PROTOCOL + "://" + secondaryHost + "/gradebook/" + gradebookId);
+		this.delete(PROTOCOL + "://" + secondaryHost + "/secondary/" + gradebookId);
+	}
+
+
+	// DELETE
+	public void deleteSecondaryGradebook (Integer gradebookId) throws GradebookNotFoundException {
+		Gradebook gradebook = getGradebookById(gradebookId);
+		gradebookRepo.deleteById(gradebookId);
 	}
 
 
@@ -239,6 +248,7 @@ public class GradebookService extends RestTemplate {
 
 	// Save the gradebook's secondary host. It was likely just created on the secondary.
 	public void syncSecondaryGradebook(Integer gradebookId, String secondaryHost) {
+		System.out.println("Syncing gradebook " + gradebookId + " with " + secondaryHost);
 		Optional<Gradebook> opt = gradebookRepo.findById(gradebookId);
 		if (!opt.isPresent()) {
 			throw new GradebookNotFoundException("Gradebook Id-" + gradebookId);
@@ -246,6 +256,7 @@ public class GradebookService extends RestTemplate {
 
 		Gradebook gradebook = opt.get();
 		gradebook.setSecondaryHost(secondaryHost);
+		this.saveGradebook(gradebook);
 	}
 
 }

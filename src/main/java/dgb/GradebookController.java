@@ -161,7 +161,8 @@ public class GradebookController {
 		// gradebook := gradebookService.getGradebook(id);
 		// if gradebook.isPrimary():
 		//     throw error
-		// gradebookService.deleteGradebook(id);
+		System.out.println("Deleting secondary: " + id.toString());
+		gradebookService.deleteSecondaryGradebook(id);
 	}
 
 	@RequestMapping(path = "/gradebook/{id}/student/{name}", method = RequestMethod.DELETE)
