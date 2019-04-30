@@ -105,5 +105,5 @@ public class Gradebook {
 	public void setSecondaryHost(String value) {
 		secondaryHost = value;
 	}
-
+	
 }
