@@ -157,23 +157,23 @@ public class GradebookService extends RestTemplate {
 		// Push new student to secondary host.
 		String secondaryHost = gradebook.getSecondaryHost();
 		if (secondaryHost == null ) {
-			return;
+			return gradebook;
 		}
 
 		// Save to secondary
 		try{
 			System.out.print("check here");
 			this.postForLocation(PROTOCOL + "://" + gradebook.getSecondaryHost() +
-							"/gradebook/" + gradebook.getId() +
-							"/student/" + studentName + "/grade/" + studentGrade,
+					"/gradebook/" + gradebook.getId() +
+					"/student/" + studentName + "/grade/" + studentGrade,
 					gradebook);
 		}catch (RestClientException exception) {
 			exception.printStackTrace();
 			System.err.println("Failed to Sync with secondary server");
-			throw new SecondaryServerSyncFailedException("Sync failed");
+			throw new SecondarySyncFailedException("Sync failed");
 		}
 
-
+		return gradebook;
 
 
 	}
