@@ -22,6 +22,7 @@ public class GradebookService extends RestTemplate {
 
 
 	public Gradebook createGradebook (Gradebook gradebook, Boolean isPrimary) throws GradebookExistsException {
+
 		for (Gradebook gb : gradebookRepo.findAll()) {
 			if (gb.getName().equals(gradebook.getName())) {
 				throw new GradebookExistsException("Gradebook Id-" + gradebook.getId());
@@ -48,7 +49,7 @@ public class GradebookService extends RestTemplate {
 	// This method is weird. The requirements expect the user to call this on the secondary host,
 	// which means that we need to call the primary to get the gradebook in question. If it doesn't exist, then fail.
 	// If it exists on this server, then fail.
-	public void createSecondaryGradebook (Integer gradebookId, String thisHost, String primaryHost) throws GradebookNotFoundException {
+	public Gradebook createSecondaryGradebook (Integer gradebookId, String thisHost, String primaryHost) throws GradebookNotFoundException {
 		Gradebook gradebook;
 
 		try {
@@ -93,6 +94,8 @@ public class GradebookService extends RestTemplate {
 		}
 		// Assuming the above passed, we save the gradebook's edit.
 		this.saveGradebook(gradebook);
+
+		return gradebook;
 	}
 
 
