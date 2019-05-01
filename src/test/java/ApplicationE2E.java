@@ -1,18 +1,13 @@
 import junit.framework.TestCase;
 
-<<<<<<< HEAD
-import org.junit.Test;
-=======
 import static org.junit.jupiter.api.Assertions.*;
-
 import java.net.URI;
 import java.util.ArrayList;
-
 import org.junit.jupiter.api.Test;
 import org.springframework.http.ResponseEntity;
->>>>>>> branch 'master' of https://github.com/tnsatbhs/DGB.git
 import org.springframework.web.client.RestClientException;
 import org.springframework.web.client.RestTemplate;
+
 
 import dgb.Gradebook;
 import dgb.Gradebooks;
