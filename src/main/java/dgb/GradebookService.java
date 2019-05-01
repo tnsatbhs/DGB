@@ -153,7 +153,7 @@ public class GradebookService extends RestTemplate {
 		gradebook.addStudent(student);
 		this.saveGradebook(gradebook);
 
-		/**
+
 		// Push new student to secondary host.
 		String secondaryHost = gradebook.getSecondaryHost();
 		if (secondaryHost == null ) {
@@ -172,7 +172,7 @@ public class GradebookService extends RestTemplate {
 			System.err.println("Failed to Sync with secondary server");
 			throw new SecondaryServerSyncFailedException("Sync failed");
 		}
-		**/
+		
 
 
 		return gradebook;
