@@ -1,13 +1,12 @@
 package dgb;
 
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
-import org.springframework.web.client.RestTemplate;
 import org.springframework.web.client.RestClientException;
+import org.springframework.web.client.RestTemplate;
 
 
 
@@ -170,11 +169,21 @@ public class GradebookService extends RestTemplate {
 
 	// PUT
 	public void updateStudent (Integer gradebookId, String studentName, String studentGrade) throws GradebookNotFoundException, StudentNotFoundException {
-		Gradebook gradebook = getGradebookById(gradebookId);
+		Optional<Gradebook> opt = gradebookRepo.findById(gradebookId);
+		if (!opt.isPresent()) {
+			throw new GradebookNotFoundException("Gradebook Id-" + gradebookId);
+		}
+		Gradebook gradebook = opt.get();
 		Student student = gradebook.getStudent(studentName);
 		if (student == null) {
 			throw new StudentNotFoundException("Name -" + studentName);
 		}
+		if (!isValidGrade(studentGrade)) {
+			throw new InvalidGradeException("grade-" + studentGrade);
+		}
+		gradebook.removeStudent(studentName);
+		student.setGrade(studentGrade);
+		gradebook.addStudent(student);
 		this.saveGradebook(gradebook);
 		// TODO: add student and grade, can not be done on secondary, changes must flow to secondary
 		String secondaryHost = gradebook.getSecondaryHost();

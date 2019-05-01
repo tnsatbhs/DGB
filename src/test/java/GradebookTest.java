@@ -1,15 +1,13 @@
 
 
-import java.awt.List;
 import java.util.ArrayList;
 
-import javax.validation.constraints.Size;
+import junit.framework.TestCase;
 
 import org.junit.Test;
 
 import dgb.Gradebook;
 import dgb.Student;
-import junit.framework.TestCase;
 
 public class GradebookTest extends TestCase {
 

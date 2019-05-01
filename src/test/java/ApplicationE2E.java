@@ -1,13 +1,11 @@
-import dgb.*;
 import junit.framework.TestCase;
 
-import static org.junit.jupiter.api.Assertions.*;
-
-import java.util.ArrayList;
-
-import org.junit.jupiter.api.Test;
+import org.junit.Test;
 import org.springframework.web.client.RestClientException;
 import org.springframework.web.client.RestTemplate;
+
+import dgb.Gradebook;
+import dgb.Gradebooks;
 
 class ApplicationE2E extends TestCase {
 

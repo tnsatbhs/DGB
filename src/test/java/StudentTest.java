@@ -1,10 +1,10 @@
 
 
+import junit.framework.TestCase;
+
 import org.junit.Test;
 
-import dgb.Gradebook;
 import dgb.Student;
-import junit.framework.TestCase;
 
 public class StudentTest extends TestCase {
 	

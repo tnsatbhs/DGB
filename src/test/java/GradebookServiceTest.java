@@ -1,13 +1,13 @@
 import java.util.ArrayList;
 import java.util.List;
 
+import junit.framework.TestCase;
+
 import org.junit.Test;
 
 import dgb.Gradebook;
 import dgb.GradebookService;
 import dgb.Student;
-
-import junit.framework.TestCase;
 
 public class GradebookServiceTest extends TestCase {
 
