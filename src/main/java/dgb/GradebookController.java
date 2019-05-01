@@ -32,7 +32,7 @@ public class GradebookController {
 		Gradebook gradebook = createGradebookOp(name);
 		HttpHeaders responseHeaders = new HttpHeaders();
 		responseHeaders.set("Location", "/gradebook/" + gradebook.getId());
-		return new ResponseEntity<Integer>(gradebook.getId(), responseHeaders, HttpStatus.CREATED);
+		return new ResponseEntity(gradebook.getId(), responseHeaders, HttpStatus.CREATED);
 	}
 
 
@@ -66,12 +66,12 @@ public class GradebookController {
 
 
 	@RequestMapping(path = "/gradebook/{id}/student/{name}/grade/{grade}", method = RequestMethod.POST)
-	public void createStudent(@PathVariable Integer id, @PathVariable String name,
+	public Gradebook addStudentToGradebook(@PathVariable Integer id, @PathVariable String name,
 			@PathVariable String grade)
 	{
 		//Von - add error checking here, throw exception if gradebook doesnt exist
 		try {
-			gradebookService.createStudent(id, name, grade);
+			return gradebookService.createStudent(id, name, grade);
 		} catch (GradebookNotFoundException e) {
 			throw e;
 		} catch (InvalidGradeException e) {

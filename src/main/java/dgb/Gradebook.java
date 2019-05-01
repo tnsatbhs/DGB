@@ -19,7 +19,7 @@ public class Gradebook {
 
 	private String name, secondaryHost;
 	private Boolean isPrimaryServer;
-	private ArrayList<Student> students = new ArrayList<Student>();
+	private ArrayList<Student> students = new ArrayList<>();
 
 	// Copy constructor.
 	public Gradebook(Gradebook gradebook) {

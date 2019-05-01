@@ -131,7 +131,7 @@ public class GradebookService extends RestTemplate {
 
 
 	// POST
-	public void createStudent (Integer gradebookId, String studentName, String studentGrade) {
+	public Gradebook createStudent (Integer gradebookId, String studentName, String studentGrade) {
 		Optional<Gradebook> opt = gradebookRepo.findById(gradebookId);
 		if (!opt.isPresent()) {
 			throw new GradebookNotFoundException("Gradebook Id-" + gradebookId);
@@ -153,17 +153,29 @@ public class GradebookService extends RestTemplate {
 		gradebook.addStudent(student);
 		this.saveGradebook(gradebook);
 
+		/**
 		// Push new student to secondary host.
 		String secondaryHost = gradebook.getSecondaryHost();
-		if (secondaryHost == null) {
-			return;
+		if (secondaryHost == null ) {
+			return gradebook;
 		}
 
 		// Save to secondary
-		this.postForLocation(PROTOCOL + "://" + gradebook.getSecondaryHost() +
-				"/gradebook/" + gradebook.getId() +
-				"/student/" + studentName + "/grade/" + studentGrade,
-				gradebook);
+		try{
+			System.out.print("check here");
+			this.postForLocation(PROTOCOL + "://" + gradebook.getSecondaryHost() +
+							"/gradebook/" + gradebook.getId() +
+							"/student/" + studentName + "/grade/" + studentGrade,
+					gradebook);
+		}catch (RestClientException exception) {
+			exception.printStackTrace();
+			System.err.println("Failed to Sync with secondary server");
+			throw new SecondaryServerSyncFailedException("Sync failed");
+		}
+		**/
+
+
+		return gradebook;
 	}
 
 
