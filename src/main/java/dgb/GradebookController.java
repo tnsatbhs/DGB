@@ -24,7 +24,7 @@ public class GradebookController {
 	}
 
 
-	@RequestMapping(path = "/secondary/{id}", method = RequestMethod.POST)
+	@RequestMapping(path = "/secondary/{id}", method = RequestMethod.POST, produces={"text/xml;charset=utf-8"})
 	public Response createSecondary(@PathVariable Integer id)
 	{
 		//create secondary copy of gradebook, cannot be done on primary server
@@ -32,7 +32,7 @@ public class GradebookController {
 		try {
 			System.out.println("TRYING TO CREATE A SECONDARY HERE...");
 			Gradebook sec_gradebook = gradebookService.createSecondaryGradebook(id, Application.this_host, Application.secondary_host);
-			return new Response(sec_gradebook.getId(), "Secondary gradebook copy created successfully");
+			return new Response(sec_gradebook.getId(), "Secondary copy of gradebook created successfully<");
 		} catch (GradebookNotFoundException e) {
 			throw e;
 		}

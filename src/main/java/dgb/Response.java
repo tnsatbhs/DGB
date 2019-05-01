@@ -14,7 +14,7 @@ class Response {
     }
 
     public void setStatus(String status){
-        this.statusMessage = "Gradebook Created Successfully";
+        this.statusMessage = status;
     }
 
     public String getStatus(){
