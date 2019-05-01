@@ -67,17 +67,16 @@ public class Gradebook {
 
 
 
-	//	@JsonIgnore
-	// Shouldn't we return the list of students with the gradebook regardless of the other /gradebook/<id>/student path?
-	// It doesn't make sense to have one call to get the name and another call to get the students. They are all part of the same entity.
-	// Also, we need to return the list of students because one of the controller handlers requires it to be there.
-	public List<Student> getStudents()
-	{
+	// Do not put @JsonIgnore here. When we need to return gradebooks without students, use AllGradebooks.
+	public ArrayList<Student> getStudents() {
 		return this.students;
 	}
 
-	public void addStudent(Student student)
-	{
+	public void setStudents(ArrayList<Student> students) {
+		this.students = students;
+	}
+
+	public void addStudent(Student student) {
 		students.add(student);
 	}
 	public void removeStudent(String name) {

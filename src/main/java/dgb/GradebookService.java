@@ -1,5 +1,6 @@
 package dgb;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
@@ -140,7 +141,11 @@ public class GradebookService extends RestTemplate {
 			throw new InvalidGradeException("grade-" + studentGrade);
 		}
 		Gradebook gradebook = opt.get();
-		if (!gradebook.getStudents().isEmpty()) {
+		ArrayList<Student> students = gradebook.getStudents();
+		if (students == null) {
+			// This gradebook was saved without any students, so create that object now.
+			gradebook.setStudents(new ArrayList<Student>());
+		} else if (!students.isEmpty()) {
 			for (Student student : gradebook.getStudents()) {
 				if (student.getName().equals(studentName)) {
 					throw new StudentExistsException("grade-" + studentGrade);
@@ -151,22 +156,23 @@ public class GradebookService extends RestTemplate {
 		student.setName(studentName);
 		student.setGrade(studentGrade);
 		gradebook.addStudent(student);
+		System.out.println("Adding new student: " + student.getName() + " to " + Application.this_host);
 		this.saveGradebook(gradebook);
-
 
 		// Push new student to secondary host.
 		String secondaryHost = gradebook.getSecondaryHost();
-		if (secondaryHost == null ) {
+		if (secondaryHost == null || !gradebook.getIsPrimaryServer()) {
+			// Don't push if there is no secondary or if this isn't the primary.
 			return gradebook;
 		}
 
 		// Save to secondary
 		try{
-			System.out.print("check here");
-			this.postForLocation(PROTOCOL + "://" + gradebook.getSecondaryHost() +
+			String url = PROTOCOL + "://" + gradebook.getSecondaryHost() +
 					"/gradebook/" + gradebook.getId() +
-					"/student/" + studentName + "/grade/" + studentGrade,
-					gradebook);
+					"/student/" + studentName + "/grade/" + studentGrade;
+			System.out.println("Trying to create secondary student: " + url);
+			this.postForLocation(url, null);
 		}catch (RestClientException exception) {
 			exception.printStackTrace();
 			System.err.println("Failed to Sync with secondary server");
@@ -174,8 +180,6 @@ public class GradebookService extends RestTemplate {
 		}
 
 		return gradebook;
-
-
 	}
 
 

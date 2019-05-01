@@ -3,6 +3,8 @@ import junit.framework.TestCase;
 import static org.junit.jupiter.api.Assertions.*;
 import java.net.URI;
 import java.util.ArrayList;
+import java.util.HashMap;
+
 import org.junit.jupiter.api.Test;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.client.RestClientException;
@@ -11,6 +13,7 @@ import org.springframework.web.client.RestTemplate;
 
 import dgb.Gradebook;
 import dgb.Gradebooks;
+import dgb.Student;
 
 class ApplicationE2E extends TestCase {
 
@@ -45,7 +48,9 @@ class ApplicationE2E extends TestCase {
 
 		RestTemplate restTemplate = new RestTemplate();
 		try {
+			HashMap<String, Student> studentsByName;
 			Gradebook gradebook, gradebookReplica;
+			Student student;
 			String url;
 
 			// Create on primary.
@@ -75,6 +80,27 @@ class ApplicationE2E extends TestCase {
 			gradebookReplica = restTemplate.getForObject(url1, Gradebook.class);
 			assertEquals(gradebook.getName(), gradebookReplica.getName());
 			assertEquals(gradebook.getId(), gradebookReplica.getId());
+
+			// Add students to the primary.
+			url = originA + "/gradebook/" + gradebook.getId() + "/student/ALEX/grade/B+";
+			gradebook = restTemplate.postForObject(url, null, Gradebook.class);
+			studentsByName = new HashMap<String, Student>();
+			for (Student s : gradebook.getStudents()) {
+				studentsByName.put(s.getName(), s);
+			}
+			student = studentsByName.get("ALEX");
+			assertTrue(student != null);
+
+			// Ensure the secondary also got the student.
+			url = originB + "/gradebook/" + gradebook.getId();
+			gradebook = restTemplate.getForObject(url, Gradebook.class);
+			studentsByName = new HashMap<String, Student>();
+			for (Student s : gradebook.getStudents()) {
+				studentsByName.put(s.getName(), s);
+			}
+			student = studentsByName.get("ALEX");
+			assertTrue(student != null);
+
 
 
 		} catch (RestClientException exception) {
