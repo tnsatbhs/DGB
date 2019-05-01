@@ -2,6 +2,9 @@ package dgb;
 import java.util.List;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -22,10 +25,14 @@ public class GradebookController {
 
 	@RequestMapping(path = "/gradebook/{name}", method = RequestMethod.POST,
 			produces={"text/xml;charset=utf-8"})
-	public Gradebook createGradebook(@PathVariable String name)
+	public ResponseEntity<Integer> createGradebook(@PathVariable String name)
 	{
 		System.out.println("Gradebook created successfully");
-		return createGradebookOp(name);
+
+		Gradebook gradebook = createGradebookOp(name);
+		HttpHeaders responseHeaders = new HttpHeaders();
+		responseHeaders.set("Location", "/gradebook/" + gradebook.getId());
+		return new ResponseEntity<Integer>(gradebook.getId(), responseHeaders, HttpStatus.CREATED);
 	}
 
 
