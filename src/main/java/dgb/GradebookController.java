@@ -114,10 +114,12 @@ public class GradebookController {
 
 	@RequestMapping(path = "/gradebook", method = RequestMethod.GET,
 			produces={"text/xml;charset=utf-8"})
-	public Gradebooks getGradebooks()
+	public AllGradebooks getGradebooks()
 	{
 		//get all gradebooks on this server, including primary and secondary copies
-		return gradebookService.getGradebooks();
+		// requirement: (title and id only)
+
+		return new AllGradebooks(gradebookService.getGradebooks());
 	}
 
 
