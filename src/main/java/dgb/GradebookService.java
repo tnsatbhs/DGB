@@ -1,5 +1,6 @@
 package dgb;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
@@ -112,8 +113,12 @@ public class GradebookService extends RestTemplate {
 	}
 
 
-	public List<Gradebook> getGradebooks () {
-		return gradebookRepo.findAll();
+	public Gradebooks getGradebooks () {
+		Gradebooks gradebooks = new Gradebooks();
+		for (Gradebook gradebook : gradebookRepo.findAll()) {
+			gradebooks.add(gradebook);
+		}
+		return gradebooks;
 	}
 
 

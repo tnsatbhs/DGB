@@ -1,4 +1,5 @@
 package dgb;
+import java.util.ArrayList;
 import java.util.List;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -18,9 +19,9 @@ public class GradebookController {
 
 	@RequestMapping(path = "/gradebook/{name}", method = RequestMethod.POST,
 			produces={"text/xml;charset=utf-8"})
-	public Integer createGradebook(@PathVariable String name)
+	public Gradebook createGradebook(@PathVariable String name)
 	{
-		return createGradebookOp(name).getId();
+		return createGradebookOp(name);
 	}
 
 
@@ -100,7 +101,7 @@ public class GradebookController {
 
 	@RequestMapping(path = "/gradebook", method = RequestMethod.GET,
 			produces={"text/xml;charset=utf-8"})
-	public List<Gradebook> getGradebooks()
+	public Gradebooks getGradebooks()
 	{
 		//get all gradebooks on this server, including primary and secondary copies
 		return gradebookService.getGradebooks();
