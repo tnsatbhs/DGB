@@ -245,6 +245,9 @@ public class GradebookService extends RestTemplate {
 	public void deleteGradebook (Integer gradebookId) throws GradebookNotFoundException {
 		Gradebook gradebook = getGradebookById(gradebookId);
 		String secondaryHost = gradebook.getSecondaryHost();
+		if(!gradebook.getIsPrimaryServer()){
+			throw new SecondaryEditNotAllowedException("Secondary copy delete not allowed");
+		}
 		System.out.println("Deleted gradebook with id: " + gradebookId.toString());
 		gradebookRepo.deleteById(gradebookId);
 		if (secondaryHost == null) {
