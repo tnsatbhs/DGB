@@ -62,27 +62,27 @@ class ApplicationE2E extends TestCase {
 			gradebook = restTemplate.getForObject(url, Gradebook.class);
 			assertEquals("foo", gradebook.getName());
 
+			final Integer gradebookId = gradebook.getId();
 			// Assert it is not on the secondary.
-			url = originB + "/gradebook/" + gradebook.getId();
-			final String url1 = url;
 			assertThrows(RestClientException.class, () -> {
-				restTemplate.getForObject(url1, Gradebook.class);
+				String _url = originB + "/gradebook/" + gradebookId;
+				restTemplate.getForObject(_url, Gradebook.class);
 			}, "It should not be on the secondary");
 
 			// Create a secondary replica.
-			url = originB + "/secondary/" + gradebook.getId();
+			url = originB + "/secondary/" + gradebookId;
 			gradebookReplica = restTemplate.postForObject(url, null, Gradebook.class);
 			assertEquals(gradebook.getName(), gradebookReplica.getName());
-			assertEquals(gradebook.getId(), gradebookReplica.getId());
+			assertEquals(gradebookId, gradebookReplica.getId());
 
 			// Assert it is on the secondary.
-			url = originB + "/gradebook/" + gradebook.getId();
-			gradebookReplica = restTemplate.getForObject(url1, Gradebook.class);
+			url = originB + "/gradebook/" + gradebookId;
+			gradebookReplica = restTemplate.getForObject(url, Gradebook.class);
 			assertEquals(gradebook.getName(), gradebookReplica.getName());
-			assertEquals(gradebook.getId(), gradebookReplica.getId());
+			assertEquals(gradebookId, gradebookReplica.getId());
 
 			// Add students to the primary.
-			url = originA + "/gradebook/" + gradebook.getId() + "/student/ALEX/grade/B+";
+			url = originA + "/gradebook/" + gradebookId + "/student/ALEX/grade/B+";
 			gradebook = restTemplate.postForObject(url, null, Gradebook.class);
 			studentsByName = new HashMap<String, Student>();
 			for (Student s : gradebook.getStudents()) {
@@ -92,7 +92,7 @@ class ApplicationE2E extends TestCase {
 			assertTrue(student != null);
 
 			// Ensure the secondary also got the student.
-			url = originB + "/gradebook/" + gradebook.getId();
+			url = originB + "/gradebook/" + gradebookId;
 			gradebook = restTemplate.getForObject(url, Gradebook.class);
 			studentsByName = new HashMap<String, Student>();
 			for (Student s : gradebook.getStudents()) {
@@ -102,20 +102,50 @@ class ApplicationE2E extends TestCase {
 			assertTrue(student != null);
 
 			// Try to update ALEX's grade
-			url = originA + "/gradebook/" + gradebook.getId() + "/student/ALEX/grade/A-";
+			url = originA + "/gradebook/" + gradebookId + "/student/ALEX/grade/A-";
 			restTemplate.put(url, null);
 
 			// Ensure the grade was updated on the primary.
-			url = originA + "/gradebook/" + gradebook.getId() + "/student/ALEX";
+			url = originA + "/gradebook/" + gradebookId + "/student/ALEX";
 			student = restTemplate.getForObject(url, Student.class);
 			assertEquals("A-", student.getGrade());
 			assertEquals("ALEX", student.getName());
 
 			// Ensure the grade was updated on the secondary.
-			url = originB + "/gradebook/" + gradebook.getId() + "/student/ALEX";
+			url = originB + "/gradebook/" + gradebookId + "/student/ALEX";
 			student = restTemplate.getForObject(url, Student.class);
 			assertEquals("A-", student.getGrade());
 			assertEquals("ALEX", student.getName());
+
+			// You should be unable to edit the grade on the secondary.
+			assertThrows(RestClientException.class, () -> {
+				String _url = originB + "/gradebook/" + gradebookId + "/student/ALEX/grade/C+";
+				restTemplate.put(_url, null);
+			}, "You should not be able to PUT a grade on the secondary");
+
+			// You should be unable to add a student / grade on the secondary.
+			assertThrows(RestClientException.class, () -> {
+				String _url = originB + "/gradebook/" + gradebookId + "/student/XELA/grade/A+";
+				restTemplate.postForLocation(_url, null);
+			}, "You should not be able to POST a grade on the secondary");
+
+			// You should be unable to delete a student on the secondary.
+			assertThrows(RestClientException.class, () -> {
+				String _url = originB + "/gradebook/" + gradebookId + "/student/ALEX";
+				restTemplate.delete(_url);
+			}, "You should not be able to DELETE a grade on the secondary");
+
+			// Prevent PUT on secondary/id
+			assertThrows(RestClientException.class, () -> {
+				String _url = originB + "/gradebook/foo";
+				restTemplate.put(_url, null);
+			}, "You should not be able to PUT the same name on the secondary");
+
+			// Prevent POST on secondary/id
+			assertThrows(RestClientException.class, () -> {
+				String _url = originB + "/gradebook/foo";
+				restTemplate.put(_url, null);
+			}, "You should not be able to POST the same name on the secondary");
 
 		} catch (RestClientException exception) {
 			System.err.println(exception.getMessage());
