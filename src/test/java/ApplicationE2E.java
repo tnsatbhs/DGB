@@ -101,7 +101,21 @@ class ApplicationE2E extends TestCase {
 			student = studentsByName.get("ALEX");
 			assertTrue(student != null);
 
+			// Try to update ALEX's grade
+			url = originA + "/gradebook/" + gradebook.getId() + "/student/ALEX/grade/A-";
+			restTemplate.put(url, null);
 
+			// Ensure the grade was updated on the primary.
+			url = originA + "/gradebook/" + gradebook.getId() + "/student/ALEX";
+			student = restTemplate.getForObject(url, Student.class);
+			assertEquals("A-", student.getGrade());
+			assertEquals("ALEX", student.getName());
+
+			// Ensure the grade was updated on the secondary.
+			url = originB + "/gradebook/" + gradebook.getId() + "/student/ALEX";
+			student = restTemplate.getForObject(url, Student.class);
+			assertEquals("A-", student.getGrade());
+			assertEquals("ALEX", student.getName());
 
 		} catch (RestClientException exception) {
 			System.err.println(exception.getMessage());

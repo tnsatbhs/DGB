@@ -197,13 +197,11 @@ public class GradebookService extends RestTemplate {
 		if (!isValidGrade(studentGrade)) {
 			throw new InvalidGradeException("grade-" + studentGrade);
 		}
-		gradebook.removeStudent(studentName);
 		student.setGrade(studentGrade);
-		gradebook.addStudent(student);
 		this.saveGradebook(gradebook);
 		// TODO: add student and grade, can not be done on secondary, changes must flow to secondary
 		String secondaryHost = gradebook.getSecondaryHost();
-		if (secondaryHost == null) {
+		if (secondaryHost == null || !gradebook.getIsPrimaryServer()) {
 			return;
 		}
 
@@ -212,7 +210,7 @@ public class GradebookService extends RestTemplate {
 				"/gradebook/" + gradebook.getId() +
 				"/student/" + studentName +
 				"/grade/" + studentGrade,
-				gradebook);
+				null);
 	}
 
 
