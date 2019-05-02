@@ -83,17 +83,30 @@ public class GradebookController {
 
 
 	@RequestMapping(path = "/gradebook/{name}", method = RequestMethod.PUT)
-	public int updateGradebook(@PathVariable String name, @RequestBody String newName)
+	public ResponseEntity<Integer> updateGradebook(@PathVariable String name)
 	{
-		return updateGradebookOp(name, newName);
+		System.out.println("Gradebook created successfully");
+
+		Gradebook gradebook = createGradebookOp(name);
+		HttpHeaders responseHeaders = new HttpHeaders();
+		responseHeaders.set("Location", "/gradebook/" + gradebook.getId());
+		return new ResponseEntity(gradebook.getId(), responseHeaders, HttpStatus.CREATED);
 	}
 
 
 	@RequestMapping(path = "/secondary/{id}", method = RequestMethod.PUT)
-	public void updateSecondary(@PathVariable Integer id, @RequestBody Gradebook gradebook)
+	public Gradebook updateSecondary(@PathVariable Integer id)
 	{
 		//create secondary copy of gradebook, cannot be done on primary server
-		gradebookService.updateSecondaryGradebook(gradebook);
+		//most of this will be done via logic and communication between apps
+		try {
+			System.out.println("TRYING TO CREATE A SECONDARY HERE...");
+			Gradebook sec_gradebook = gradebookService.createSecondaryGradebook(id, Application.this_host, Application.secondary_host);
+			System.out.println("Secondary copy of gradebook created successfully<");
+			return sec_gradebook;
+		} catch (GradebookNotFoundException e) {
+			throw e;
+		}
 	}
 
 
