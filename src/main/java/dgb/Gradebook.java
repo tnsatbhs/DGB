@@ -14,7 +14,6 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
 public class Gradebook {
 
 	@Id
-	@GeneratedValue(strategy = GenerationType.AUTO)
 	protected Integer id;
 
 	private String name, secondaryHost;

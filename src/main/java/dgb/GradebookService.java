@@ -15,6 +15,7 @@ import org.springframework.web.client.RestTemplate;
 public class GradebookService extends RestTemplate {
 
 	public static final String PROTOCOL = "http";
+	private Integer bookId = 1;
 
 
 	@Autowired
@@ -35,8 +36,23 @@ public class GradebookService extends RestTemplate {
 
 
 	public Gradebook createGradebook (String gradebookName, Boolean isPrimary) throws GradebookExistsException {
+		for (Gradebook gb : gradebookRepo.findAll()) {
+			if (gb.getName().equals(gradebookName)) {
+				throw new GradebookExistsException("Gradebook Id-" + gb.getId());
+			}
+		}
 		Gradebook gradebook = new Gradebook();
 		gradebook.setName(gradebookName);
+		gradebook.setId(bookId);
+		bookId++;
+		
+		String url = PROTOCOL + "://" + Application.secondary_host +
+				"/syncId/" + bookId;
+		System.out.println("Trying to sync GradebookId: " + bookId);
+		this.postForLocation(url, null);
+		
+		//flow to secondary
+		
 		return this.createGradebook(gradebook, isPrimary);
 	}
 
@@ -252,6 +268,11 @@ public class GradebookService extends RestTemplate {
 	// DELETE
 	public void deleteStudent (Integer gradebookId, String studentName) throws GradebookNotFoundException {
 		Gradebook gradebook = getGradebookById(gradebookId);
+		if (!gradebook.getIsPrimaryServer()) {
+			throw new SecondaryEditNotAllowedException("Something");
+		}
+		gradebook.removeStudent(studentName);
+		this.saveGradebook(gradebook);
 		String secondaryHost = gradebook.getSecondaryHost();
 		if (secondaryHost == null) {
 			return;
@@ -291,6 +312,11 @@ public class GradebookService extends RestTemplate {
 		Gradebook gradebook = opt.get();
 		gradebook.setSecondaryHost(secondaryHost);
 		this.saveGradebook(gradebook);
+	}
+	
+	public void syncId(Integer id)
+	{
+		this.bookId = id;
 	}
 
 }

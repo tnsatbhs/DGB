@@ -204,6 +204,12 @@ public class GradebookController {
 			throw e;
 		}
 	}
+	
+	@RequestMapping(path = "/syncId/{id}", method = RequestMethod.POST)
+	public void syncId(@PathVariable Integer id)
+	{
+		gradebookService.syncId(id);
+	}
 
 	public Gradebook createGradebookOp(String name)
 	{
