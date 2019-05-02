@@ -70,10 +70,14 @@ public class GradebookService extends RestTemplate {
 
 		try {
 			gradebook = getGradebookById(gradebookId);
+			if(gradebook.getIsPrimaryServer()){
+				throw new OperationNotAllowedException("Primary server resource can not be edited");
+			}
 			if (gradebook != null) {
 				System.err.println("Found gradebook name " + gradebook.getName());
 				throw new GradebookExistsException(gradebookId.toString() + " already exists on this server");
 			}
+
 		} catch (GradebookNotFoundException exception) {
 			// Good...
 		}
@@ -246,7 +250,7 @@ public class GradebookService extends RestTemplate {
 		Gradebook gradebook = getGradebookById(gradebookId);
 		String secondaryHost = gradebook.getSecondaryHost();
 		if(!gradebook.getIsPrimaryServer()){
-			throw new SecondaryEditNotAllowedException("Secondary copy delete not allowed");
+			throw new OperationNotAllowedException("Operation not allowed");
 		}
 		System.out.println("Deleted gradebook with id: " + gradebookId.toString());
 		gradebookRepo.deleteById(gradebookId);
