@@ -160,7 +160,11 @@ public class GradebookService extends RestTemplate {
 		if (!isValidGrade(studentGrade)) {
 			throw new InvalidGradeException("grade-" + studentGrade);
 		}
+
 		Gradebook gradebook = opt.get();
+		if(!gradebook.getIsPrimaryServer()){
+			throw new OperationNotAllowedException("Operation not allowed");
+		}
 		ArrayList<Student> students = gradebook.getStudents();
 		if (students == null) {
 			// This gradebook was saved without any students, so create that object now.
@@ -210,6 +214,9 @@ public class GradebookService extends RestTemplate {
 			throw new GradebookNotFoundException("Gradebook Id-" + gradebookId);
 		}
 		Gradebook gradebook = opt.get();
+		if(!gradebook.getIsPrimaryServer()){
+			throw new OperationNotAllowedException("Operation not allowed");
+		}
 		Student student = gradebook.getStudent(studentName);
 		if (student == null) {
 			throw new StudentNotFoundException("Name -" + studentName);
