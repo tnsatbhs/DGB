@@ -265,8 +265,9 @@ public class GradebookService extends RestTemplate {
 	// DELETE
 	public void deleteSecondaryGradebook (Integer gradebookId) throws GradebookNotFoundException {
 		Gradebook gradebook = getGradebookById(gradebookId);
+
 		if (gradebook.getIsPrimaryServer()) {
-			throw new SecondaryEditNotAllowedException("Something");
+			throw new OperationNotAllowedException("Primary server resource can not be edited");
 		}
 		gradebookRepo.deleteById(gradebookId);
 	}
