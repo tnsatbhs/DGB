@@ -1,6 +1,7 @@
 package dgb;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Optional;
 
@@ -45,14 +46,14 @@ public class GradebookService extends RestTemplate {
 		gradebook.setName(gradebookName);
 		gradebook.setId(bookId);
 		bookId++;
-		
+
 		String url = PROTOCOL + "://" + Application.secondary_host +
 				"/syncId/" + bookId;
 		System.out.println("Trying to sync GradebookId: " + bookId);
 		this.postForLocation(url, null);
-		
+
 		//flow to secondary
-		
+
 		return this.createGradebook(gradebook, isPrimary);
 	}
 
@@ -150,6 +151,40 @@ public class GradebookService extends RestTemplate {
 		return gradebook.getStudents();
 	}
 
+	// Sync from primary to secondary
+	public void syncStudent (Integer gradebookId, String studentName, String studentGrade) {
+		Optional<Gradebook> opt = gradebookRepo.findById(gradebookId);
+		if (!opt.isPresent()) {
+			throw new GradebookNotFoundException("Gradebook Id-" + gradebookId);
+		}
+		if (!isValidGrade(studentGrade)) {
+			throw new InvalidGradeException("grade-" + studentGrade);
+		}
+
+		Gradebook gradebook = opt.get();
+		// Must be a secondary
+		if (gradebook.getIsPrimaryServer()){
+			throw new OperationNotAllowedException("Operation not allowed");
+		}
+		ArrayList<Student> students = gradebook.getStudents();
+		if (students == null) {
+			students = new ArrayList<Student>();
+			gradebook.setStudents(students);
+		}
+		HashMap<String, Student> studentsByName = new HashMap<String, Student>();
+		for (Student s : students) {
+			studentsByName.put(s.getName(), s);
+		}
+		Student student = studentsByName.get(studentName);
+		if (student == null) {
+			student = new Student();
+			student.setName(studentName);
+			gradebook.addStudent(student);
+		}
+		student.setGrade(studentGrade);
+		this.saveGradebook(gradebook);
+	}
+
 
 	// POST
 	public Gradebook createStudent (Integer gradebookId, String studentName, String studentGrade) {
@@ -194,7 +229,7 @@ public class GradebookService extends RestTemplate {
 		try{
 			String url = PROTOCOL + "://" + gradebook.getSecondaryHost() +
 					"/gradebook/" + gradebook.getId() +
-					"/student/" + studentName + "/grade/" + studentGrade;
+					"/student/" + studentName + "/grade/" + studentGrade + "/sync";
 			System.out.println("Trying to create secondary student: " + url);
 			this.postForLocation(url, null);
 		}catch (RestClientException exception) {
@@ -236,7 +271,7 @@ public class GradebookService extends RestTemplate {
 		this.put(PROTOCOL + "://" + secondaryHost +
 				"/gradebook/" + gradebook.getId() +
 				"/student/" + studentName +
-				"/grade/" + studentGrade,
+				"/grade/" + studentGrade + "/sync",
 				null);
 	}
 
@@ -328,7 +363,7 @@ public class GradebookService extends RestTemplate {
 		gradebook.setSecondaryHost(secondaryHost);
 		this.saveGradebook(gradebook);
 	}
-	
+
 	public void syncId(Integer id)
 	{
 		this.bookId = id;

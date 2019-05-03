@@ -42,7 +42,7 @@ public class GradebookController {
 		//create secondary copy of gradebook, cannot be done on primary server
 		//most of this will be done via logic and communication between apps
 		try {
-			System.out.println("TRYING TO CREATE A SECONDARY HERE...");
+			System.out.println("TRYING TO CREATE A SECONDARY");
 			Gradebook sec_gradebook = gradebookService.createSecondaryGradebook(id, Application.this_host, Application.secondary_host);
 			System.out.println("Secondary copy of gradebook created successfully<");
 			return sec_gradebook;
@@ -100,7 +100,7 @@ public class GradebookController {
 		//create secondary copy of gradebook, cannot be done on primary server
 		//most of this will be done via logic and communication between apps
 		try {
-			System.out.println("TRYING TO CREATE A SECONDARY HERE...");
+			System.out.println("TRYING TO CREATE A SECONDARY");
 			Gradebook sec_gradebook = gradebookService.createSecondaryGradebook(id, Application.this_host, Application.secondary_host);
 			System.out.println("Secondary copy of gradebook created successfully<");
 			return sec_gradebook;
@@ -124,6 +124,29 @@ public class GradebookController {
 			throw e;
 		}
 	}
+
+
+	@RequestMapping(path = "/gradebook/{id}/student/{name}/grade/{grade}/sync", method = RequestMethod.PUT)
+	public void putSyncStudent(@PathVariable Integer id, @PathVariable String name,
+			@PathVariable String grade) {
+		syncStudent(id, name, grade);
+	}
+
+	@RequestMapping(path = "/gradebook/{id}/student/{name}/grade/{grade}/sync", method = RequestMethod.POST)
+	public void syncStudent(@PathVariable Integer id, @PathVariable String name,
+			@PathVariable String grade)
+	{
+		try {
+			gradebookService.syncStudent(id, name, grade);
+		} catch (GradebookNotFoundException e) {
+			throw e;
+		} catch (InvalidGradeException e) {
+			throw e;
+		} catch (StudentNotFoundException e) {
+			throw e;
+		}
+	}
+
 
 	@RequestMapping(path = "/gradebook", method = RequestMethod.GET,
 			produces={"text/xml;charset=utf-8"})
@@ -204,7 +227,7 @@ public class GradebookController {
 			throw e;
 		}
 	}
-	
+
 	@RequestMapping(path = "/syncId/{id}", method = RequestMethod.POST)
 	public void syncId(@PathVariable Integer id)
 	{
