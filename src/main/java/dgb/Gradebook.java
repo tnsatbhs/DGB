@@ -70,6 +70,7 @@ public class Gradebook {
 			}
 		}
 	}
+	
 	public Student getStudent(String name) {
 		for (Student s : this.students) {
 			if (s.getName().equals(name)) {
