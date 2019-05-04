@@ -165,6 +165,19 @@ class ApplicationE2E extends TestCase {
 				restTemplate.delete(_url);
 			}, "You should not be able to run Delete on this Api on primary");
 
+			// Prevent POST on secondary/id
+			assertThrows(RestClientException.class, () -> {
+				String _url = originB + "/gradebook/foo";
+				restTemplate.postForLocation(_url, null);
+			}, "You should not be able to POST the same name on the secondary");
+
+			// Prevent DELETE on secondary/id
+			assertThrows(RestClientException.class, () -> {
+				String _url = originB + "/gradebook/foo";
+				restTemplate.delete(_url);
+			}, "You should not be able to DELETE the same name on the secondary");
+
+
 		} catch (RestClientException exception) {
 			System.err.println(exception.getMessage());
 			fail(exception.getMessage());
