@@ -14,12 +14,26 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
 public class Gradebook {
 
 	@Id
-	@GeneratedValue(strategy = GenerationType.AUTO)
 	protected Integer id;
 
 	private String name, secondaryHost;
 	private Boolean isPrimaryServer;
-	private ArrayList<Student> students = new ArrayList<Student>();
+	private ArrayList<Student> students = new ArrayList<>();
+
+	// Copy constructor.
+	public Gradebook(Gradebook gradebook) {
+		this.setId(gradebook.getId());
+		this.setName(gradebook.getName());
+		this.setSecondaryHost(gradebook.getSecondaryHost());
+		this.setIsPrimaryServer(gradebook.getIsPrimaryServer());
+		// Deep copy students.
+		for (Student student : gradebook.students) {
+			this.students.add(new Student(student));
+		}
+	}
+
+	// Default constructor.
+	public Gradebook() { }
 
 	public void setId(Integer id)
 	{
@@ -52,14 +66,16 @@ public class Gradebook {
 
 
 
-	@JsonIgnore
-	public List<Student> getStudents()
-	{
+	// Do not put @JsonIgnore here. When we need to return gradebooks without students, use AllGradebooks.
+	public ArrayList<Student> getStudents() {
 		return this.students;
 	}
 
-	public void addStudent(Student student)
-	{
+	public void setStudents(ArrayList<Student> students) {
+		this.students = students;
+	}
+
+	public void addStudent(Student student) {
 		students.add(student);
 	}
 	public void removeStudent(String name) {

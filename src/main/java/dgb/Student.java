@@ -12,9 +12,14 @@ public class Student implements Serializable {
 	private String name;
 	private String grade;
 
-	public Student(){
+	public Student() { }
 
+	// Copy constructor
+	public Student(Student student) {
+		this.setName(student.getName());
+		this.setGrade(student.getGrade());
 	}
+
 
 	public String getName()
 	{

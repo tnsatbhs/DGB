@@ -2,6 +2,9 @@ package dgb;
 import java.util.List;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -22,30 +25,53 @@ public class GradebookController {
 
 	@RequestMapping(path = "/gradebook/{name}", method = RequestMethod.POST,
 			produces={"text/xml;charset=utf-8"})
-	public Integer createGradebook(@PathVariable String name)
+	public ResponseEntity<Integer> createGradebook(@PathVariable String name)
 	{
-		return createGradebookOp(name).getId();
+		System.out.println("Gradebook created successfully");
+
+		Gradebook gradebook = createGradebookOp(name);
+		HttpHeaders responseHeaders = new HttpHeaders();
+		responseHeaders.set("Location", "/gradebook/" + gradebook.getId());
+		return new ResponseEntity(gradebook.getId(), responseHeaders, HttpStatus.CREATED);
 	}
 
-	@RequestMapping(path = "/secondary/{id}", method = RequestMethod.POST)
-	public void createSecondary(@PathVariable Integer id)
+
+	@RequestMapping(path = "/secondary/{id}", method = RequestMethod.POST, produces={"text/xml;charset=utf-8"})
+	public Gradebook createSecondary(@PathVariable Integer id)
 	{
 		//create secondary copy of gradebook, cannot be done on primary server
 		//most of this will be done via logic and communication between apps
 		try {
-			gradebookService.createSecondaryGradebook(id, Application.secondary_host);
+			System.out.println("TRYING TO CREATE A SECONDARY");
+			Gradebook sec_gradebook = gradebookService.createSecondaryGradebook(id, Application.this_host, Application.secondary_host);
+			System.out.println("Secondary copy of gradebook created successfully<");
+			return sec_gradebook;
 		} catch (GradebookNotFoundException e) {
 			throw e;
 		}
 	}
 
+
+	// Someone called a POST /secondary/{id} on the other server. That server called this server's
+	// GET /gradebook/{id} to get the gradebook, create a secondary, and then called this endpoint to notify of a creation on the secondary.
+	@RequestMapping(path = "/secondary/{id}/sync", method = RequestMethod.POST)
+	public void syncSecondary(@PathVariable Integer id)
+	{
+		try {
+			gradebookService.syncSecondaryGradebook(id, Application.secondary_host);
+		} catch (GradebookNotFoundException e) {
+			throw e;
+		}
+	}
+
+
 	@RequestMapping(path = "/gradebook/{id}/student/{name}/grade/{grade}", method = RequestMethod.POST)
-	public void createStudent(@PathVariable Integer id, @PathVariable String name,
+	public Gradebook addStudentToGradebook(@PathVariable Integer id, @PathVariable String name,
 			@PathVariable String grade)
 	{
 		//Von - add error checking here, throw exception if gradebook doesnt exist
 		try {
-			gradebookService.createStudent(id, name, grade);
+			return gradebookService.createStudent(id, name, grade);
 		} catch (GradebookNotFoundException e) {
 			throw e;
 		} catch (InvalidGradeException e) {
@@ -57,17 +83,30 @@ public class GradebookController {
 
 
 	@RequestMapping(path = "/gradebook/{name}", method = RequestMethod.PUT)
-	public Integer updateGradebook(@PathVariable String name)
+	public ResponseEntity<Integer> updateGradebook(@PathVariable String name)
 	{
-		return createGradebookOp(name).getId();
+		System.out.println("Gradebook created successfully");
+
+		Gradebook gradebook = createGradebookOp(name);
+		HttpHeaders responseHeaders = new HttpHeaders();
+		responseHeaders.set("Location", "/gradebook/" + gradebook.getId());
+		return new ResponseEntity(gradebook.getId(), responseHeaders, HttpStatus.CREATED);
 	}
 
 
 	@RequestMapping(path = "/secondary/{id}", method = RequestMethod.PUT)
-	public void updateSecondary(@PathVariable Integer id, @RequestBody Gradebook gradebook)
+	public Gradebook updateSecondary(@PathVariable Integer id)
 	{
 		//create secondary copy of gradebook, cannot be done on primary server
-		gradebookService.updateSecondaryGradebook(gradebook);
+		//most of this will be done via logic and communication between apps
+		try {
+			System.out.println("TRYING TO CREATE A SECONDARY");
+			Gradebook sec_gradebook = gradebookService.createSecondaryGradebook(id, Application.this_host, Application.secondary_host);
+			System.out.println("Secondary copy of gradebook created successfully<");
+			return sec_gradebook;
+		} catch (GradebookNotFoundException e) {
+			throw e;
+		}
 	}
 
 
@@ -78,7 +117,7 @@ public class GradebookController {
 		try {
 			gradebookService.updateStudent(id, name, grade);
 		} catch (GradebookNotFoundException e) {
-			throw e;	
+			throw e;
 		} catch (InvalidGradeException e) {
 			throw e;
 		} catch (StudentNotFoundException e) {
@@ -86,13 +125,48 @@ public class GradebookController {
 		}
 	}
 
+
+	@RequestMapping(path = "/gradebook/{id}/student/{name}/grade/{grade}/sync", method = RequestMethod.PUT)
+	public void putSyncStudent(@PathVariable Integer id, @PathVariable String name,
+			@PathVariable String grade) {
+		syncStudent(id, name, grade);
+	}
+
+	@RequestMapping(path = "/gradebook/{id}/student/{name}/grade/{grade}/sync", method = RequestMethod.POST)
+	public void syncStudent(@PathVariable Integer id, @PathVariable String name,
+			@PathVariable String grade)
+	{
+		try {
+			gradebookService.syncStudent(id, name, grade);
+		} catch (GradebookNotFoundException e) {
+			throw e;
+		} catch (InvalidGradeException e) {
+			throw e;
+		} catch (StudentNotFoundException e) {
+			throw e;
+		}
+	}
+
+
 	@RequestMapping(path = "/gradebook", method = RequestMethod.GET,
 			produces={"text/xml;charset=utf-8"})
-	public List<Gradebook> getGradebooks()
+	public AllGradebooks getGradebooks()
 	{
 		//get all gradebooks on this server, including primary and secondary copies
-		return gradebookService.getGradebooks();
+		// requirement: (title and id only)
+
+		return new AllGradebooks(gradebookService.getGradebooks());
 	}
+
+
+	@RequestMapping(path = "/gradebook/{id}", method = RequestMethod.GET,
+			produces={"text/xml;charset=utf-8"})
+	public Gradebook getGradebook(@PathVariable Integer id)
+	{
+		//get all gradebooks on this server, including primary and secondary copies
+		return gradebookService.getGradebookById(id);
+	}
+
 
 	@RequestMapping(path = "/gradebook/{id}/student", method = RequestMethod.GET,
 			produces={"text/xml;charset=utf-8"})
@@ -139,7 +213,8 @@ public class GradebookController {
 		// gradebook := gradebookService.getGradebook(id);
 		// if gradebook.isPrimary():
 		//     throw error
-		// gradebookService.deleteGradebook(id);
+		System.out.println("Deleting secondary: " + id.toString());
+		gradebookService.deleteSecondaryGradebook(id);
 	}
 
 	@RequestMapping(path = "/gradebook/{id}/student/{name}", method = RequestMethod.DELETE)
@@ -153,6 +228,12 @@ public class GradebookController {
 		}
 	}
 
+	@RequestMapping(path = "/syncId/{id}", method = RequestMethod.POST)
+	public void syncId(@PathVariable Integer id)
+	{
+		gradebookService.syncId(id);
+	}
+
 	public Gradebook createGradebookOp(String name)
 	{
 		try {
@@ -162,16 +243,14 @@ public class GradebookController {
 		}
 	}
 
-	public Gradebook updateGradebookOp(String name) {
-
+	public int updateGradebookOp(String name, String newName) {
 		try {
-			return gradebookService.updateGradebook(name);
-		} catch (Exception e) {
-			e.printStackTrace();
-			System.out.println("IT FAILED");
+			return gradebookService.updateGradebook(name, newName);
+		} catch (SecondaryEditNotAllowedException e) {
+			throw e;
 		}
-		return null;
 
 	}
+
 
 }
