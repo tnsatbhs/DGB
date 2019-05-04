@@ -147,6 +147,24 @@ class ApplicationE2E extends TestCase {
 				restTemplate.put(_url, null);
 			}, "You should not be able to POST the same name on the secondary");
 
+			// Prevent POST on primary for secondary/id api
+			assertThrows(RestClientException.class, () -> {
+				String _url = originA + "/secondary/" + gradebookId;
+				restTemplate.postForLocation(_url, null);
+			}, "You should not be able to run POST on this Api on primary");
+
+			// Prevent PUT on primary for secondary/id api
+			assertThrows(RestClientException.class, () -> {
+				String _url = originA + "/secondary/" + gradebookId;
+				restTemplate.put(_url, null);
+			}, "You should not be able to run PUT on this Api on primary");
+
+			// Prevent Delete on primary for secondary/id api
+			assertThrows(RestClientException.class, () -> {
+				String _url = originA + "/secondary/" + gradebookId;
+				restTemplate.delete(_url);
+			}, "You should not be able to run Delete on this Api on primary");
+
 		} catch (RestClientException exception) {
 			System.err.println(exception.getMessage());
 			fail(exception.getMessage());
