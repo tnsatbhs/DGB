@@ -24,21 +24,6 @@ import org.springframework.test.context.TestPropertySource;
 @AutoConfigureMockMvc
 @TestPropertySource(locations = "classpath:application-integrationtest.properties")
 public class DgbTest {
-
-	/*
-	 * 
-	 *Every GradeBook has one primary server
-	Every GradeBook has zero or one secondary server
-	A GradeBook's primary server cannot be a secondary server for that GradeBook
-	GradeBook titles are unique across the DGB system
-	GradeBook IDs are unique across the DGB system
-	Every GradeBook must have a title, which must be a character string that begins with a non-whitespace character.
-	GradeBook updates must be done through the primary server
-	The primary server is responsible for propagating updates to secondary servers, if any
-	A GradeBook can be empty (that is, contain no students)
-	For every student, the content must be non-empty
-	Student names are unique across a GradeBook
-	 */
 	
 	@Autowired
     private MockMvc mvc;
@@ -58,22 +43,6 @@ public class DgbTest {
 	   
 	    assertEquals("cs",gb2.getName());
  
-	 //
-	    
-	    
-	    
-		 
-		/*
-		 * mvc.perform(get("/api/employees") .contentType(MediaType.APPLICATION_JSON))
-		 * .andExpect(status().isOk()) .andExpect(content()
-		 * .contentTypeCompatibleWith(MediaType.APPLICATION_JSON))
-		 * .andExpect(jsonPath("$[0].name", is("bob")));
-		 */
-		
 	}
-	
-	
-	
-	
 
 }

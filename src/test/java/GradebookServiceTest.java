@@ -3,6 +3,7 @@ import java.util.List;
 
 import junit.framework.TestCase;
 
+import org.junit.Assert;
 import org.junit.Test;
 
 import dgb.Gradebook;
@@ -20,6 +21,20 @@ public class GradebookServiceTest extends TestCase {
 			Gradebook gradebook = svc.createGradebook("Math", true);
 			assertEquals("Math", gradebook.getName());
 			assertTrue(gradebook.getIsPrimaryServer());
+		}
+		catch (Exception e) {
+			System.err.println(e.getMessage());
+		}
+	}
+	
+	@Test
+	public void testThatTheCreatedGradebookHasPrimaryServer() {
+		GradebookService svc = new GradebookService();
+
+		try {
+			Gradebook gradebook = svc.createSecondaryGradebook(12344, "primary" , "secondary");
+			assertEquals("secondary" , gradebook.getSecondaryHost());
+			assertFalse(gradebook.getIsPrimaryServer());
 		}
 		catch (Exception e) {
 			System.err.println(e.getMessage());
@@ -54,14 +69,28 @@ public class GradebookServiceTest extends TestCase {
 		assertTrue(students.contains(student));
 	}
 
+	@Test
+	public void testGetStudents2() {
+		List <Student>  students = new ArrayList();
+		Student s1 = new Student();
+		s1.setName("Ashif");
+		s1.setGrade("A");
+		
+		Student s2 = new Student();
+		s2.setName("Ashif2");
+		s2.setGrade("B");
+		
+		students.add(s1);
+		students.add(s2);
+		Assert.assertEquals(2, students.size());
+	}
 
 	@Test
 	public void testCreateStudent() {
 		GradebookService svc = new GradebookService();
 		try {
-			svc.createStudent(123, "ashif", "A");
+			Gradebook gradebook = svc.createStudent(123, "ashif", "A");
 
-			Gradebook gradebook = new Gradebook();
 			gradebook.setId(123);
 			int id = gradebook.getId();
 			assertEquals(123, id);

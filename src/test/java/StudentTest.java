@@ -1,32 +1,44 @@
+import static org.junit.Assert.*;
 
-
-import junit.framework.TestCase;
-
+import org.junit.After;
+import org.junit.Before;
 import org.junit.Test;
 
 import dgb.Student;
 
-public class StudentTest extends TestCase {
+public class StudentTest {
 	
+	private Student student;
+	
+	@Before
+	public void setUp() throws Exception {
+		student = new Student();
+	}
+
+	@After
+	public void tearDown() throws Exception {
+		student = null;
+	}
+
 	@Test
 	public void testStudent() {
-		Student st = new Student();
-		assertNotNull(st);
+		Student s1 = null;
+		assertNull(s1);
+		assertNotNull(student);
 	}
-	
+
 	@Test
-	public void testSetName() {
-		Student st = new Student();
-		st.setName("Ashif");
-		String name = st.getName();
+	public void testGetSetName() {
+		
+		student.setName("Ashif");
+		String name = student.getName();
 		assertEquals("Ashif", name);
 	}
 
 	@Test
-	public void testSetGrade() {
-		Student st = new Student();
-		st.setGrade("A");
-		String grade = st.getGrade();
+	public void testGetSetGrade() {
+		student.setGrade("A");
+		String grade = student.getGrade();
 		assertEquals("A", grade);
 	}
 
