@@ -28,6 +28,10 @@ public class AllGradebooks extends ArrayList<ShortGradebook> {
 			this.add(sg);
 		}
 	}
+	
+	public AllGradebooks() {
+		
+	}
 
 
 }
