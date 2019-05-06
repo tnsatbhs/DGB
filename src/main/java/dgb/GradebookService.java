@@ -59,19 +59,6 @@ public class GradebookService extends RestTemplate {
 		} catch (RestClientException e){
 			//do nothing
 		}
-		String uri = PROTOCOL + "://" + Application.secondary_host +
-				"/gradebook";
-		ArrayList<ShortGradebook> list = this.getForObject(uri, AllGradebooks.class);
-		if (!list.isEmpty())
-		{
-			for (ShortGradebook book : list)
-			{
-				if (gradebookName == book.name)
-				{
-					throw new GradebookExistsException("Gradebook Id-" + book.id);
-				}	
-			}
-		}
 		Gradebook gradebook = new Gradebook();
 		gradebook.setName(gradebookName);
 		gradebook.setId(bookId);
