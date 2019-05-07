@@ -31,3 +31,4 @@ This project is an implementation of DGB (Distributed GradeBooks), a distributed
 * IDE IntelliJ IDEA or Eclipse 
 * how to set up secondary port in intelliJ IDE
 ![Screen Shot 2019-05-06 at 9 55 49 PM](https://user-images.githubusercontent.com/44858342/57266663-f31a7900-704a-11e9-809f-2324cbaa0691.png)
+*
